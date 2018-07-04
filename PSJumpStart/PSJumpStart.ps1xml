@@ -1,0 +1,34 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<Types>
+  <Type>
+    <Name>System.Collections.Hashtable</Name>
+    <Members>
+      <ScriptMethod>
+        <Name>AppendValue</Name>
+        <Script>
+            #This will ONLY work for simple content type(s)
+	        $key = $args[0]
+	        $data = $args[1]
+	        if ($this.ContainsKey($key)) {
+		        $currentData = $this[$key]
+		        $this.Remove($key)
+		        $this.Add($key,$currentData + $data)
+	        } else {
+		        $this.Add($key,$data)
+	        }
+        </Script>
+      </ScriptMethod>
+      <ScriptMethod>
+        <Name>Replace</Name>
+        <Script>
+	        $key = $args[0]
+	        $data = $args[1]
+	        if ($this.ContainsKey($key)) {		        
+		        $this.Remove($key)
+	        } 
+		    $this.Add($key,$data)	        
+        </Script>
+      </ScriptMethod>
+    </Members>
+  </Type>
+</Types>

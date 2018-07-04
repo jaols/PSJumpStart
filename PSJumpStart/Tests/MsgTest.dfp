@@ -1,0 +1,13 @@
+#
+# Default parameters for local script
+#
+one="Its a messing mess"
+#
+#Global default parameters
+#
+#msg:Type="ERROR"
+#msg:useEventLog=$true
+msg:useFileLog=$true
+msg:logFile=$(Split-Path -Parent $MyInvocation.PSCommandPath) + "\Logs\" + $(Split-Path -Leaf $MyInvocation.PSCommandPath) + "." + (Get-Date -Format 'yyyy-MM') + ".Log"
+
+

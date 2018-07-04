@@ -1,0 +1,15 @@
+#
+# Default parameters for local script
+#
+one="Defaul is ONE"
+Two=@("First","Second","Third")
+isint=236
+pstring='notepad'
+#Code input to parameter
+sessionParam={Get-Process -Name $pstring}
+MissingMe="This is not part of arguments but may be set anyway"
+#
+#Global default parameters
+#
+*:Verbose=$true
+

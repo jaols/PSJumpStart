@@ -1,0 +1,10 @@
+# Default parameter syntax according to $PSDefaultParameterValues content
+# 
+# https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_parameters_default_values?view=powershell-6
+#
+
+#Local defaults for scripts
+
+#Global variables
+QuerySQL:ConnectionString="server='.';database='Northwind';trusted_connection=true;"
+
