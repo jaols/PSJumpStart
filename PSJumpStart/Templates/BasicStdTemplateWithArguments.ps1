@@ -2,8 +2,7 @@
 .Synopsis
     Template 
 .DESCRIPTION
-    This template will load $PSDefaultParameterValues and the PSJumpStart module
-    and has support for Write-Verbose, -WhatIf and whatnot.
+    This template is stand alone and has argument parsing and support for -Whatif and whatnot.
 .PARAMETER arg1
    	First mandatory string argument.
 .PARAMETER arg2
