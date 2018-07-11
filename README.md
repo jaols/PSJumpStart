@@ -1,5 +1,5 @@
 # PSJumpStart
-PowerShell Jumpstart module
+
 [TOC]
 
 ## Introduction
@@ -46,7 +46,11 @@ To debug your script as well as get `Write-Verbose`printouts from ALL used modul
 
 ### The templates
 
-In the `Templates`folder (living in the module folder) is a set of templates. Copy these to your preferred working space.
+In the `Templates`folder (living in the module folder) is a set of templates. Copy these to your preferred working space or use the command `Copy-PSTemplate` in the module.
+
+### Script signing
+
+There is a little stand alone feature in the `Templates`folder for script signing. It will search for a valid `CodeSigning`  capable certificate on the local computer. If not found a new self signed certificate will be created and used for signing scripts.
 
 ## Down the rabbit hole
 
