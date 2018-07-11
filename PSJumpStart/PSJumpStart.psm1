@@ -60,6 +60,11 @@ function Find-PSTemplate {
         $return
     }
 }
+function IsVerbose {
+[CmdletBinding()]
+param() 
+   [bool](Write-Verbose ([String]::Empty) 4>&1)
+}
 
 function verboseTest {
 [CmdletBinding()]
@@ -513,10 +518,13 @@ Param(
         if (Test-Path "$settingsFile") {
             $settings = Get-Content $settingsFile
             foreach($row in $settings) {
+                #Row Syntax FunctionName:Variable=Value/Code
                 if (($row -match ":") -and ($row -match "=") -and ($row.Trim().SubString(0,1) -ne "#")) {                    
-                    $key = $row.Split('=')[0]                    
+                    $key = $row.Split('=')[0]               
+                    $Variable = $key.Split(':')[1]
                     
-                    if (!$result.ContainsKey($key)) {
+                    #Prevent overriding arguments to caller
+                    if (!$result.ContainsKey($key) -and -not $CallerInvocation.BoundParameters[$Variable].IsPresent) {
                         try {
                             #Add value from XML (OR result from PS-code execution)
                             $result.Add($key,(Invoke-Expression $row.SubString($key.Length+1)))
@@ -563,12 +571,15 @@ Param(
             foreach($row in $settings) {
                 if (($row -match ":") -and ($row -match "=") -and ($row.Trim().SubString(0,1) -ne "#")) {
                     $key = $settingsFile + ":" + $row.Split('=')[0]
-                    #Msg "Key in file $key"
-                    if (!$result.ContainsKey($key)) {
+                    $Variable = $key.Split(':')[1]
+                    
+                    #Prevent overriding arguments to caller
+                    if (!$result.ContainsKey($key) -and -not $CallerInvocation.BoundParameters[$Variable].IsPresent) {
+
                         try {
                             #Add value from XML (OR result from PS-code execution)
                             $result.Add($key,(Invoke-Expression $row.SubString(($row.Split('=')[0]).Length+1)))
-                            Write-Host "Added value for $key"
+                            Write-Host ("Added " + $row.SubString(($row.Split('=')[0]).Length+1) + " for $key")
                         } catch {
                             $ex = $PSItem
                             $ex.ErrorDetails = "Err adding $key from $settingsFile. " + $PSItem.Exception.Message

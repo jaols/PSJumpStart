@@ -11,5 +11,5 @@ MissingMe="This is not part of arguments but may be set anyway"
 #
 #Global default parameters
 #
-*:Verbose=$true
+#*:Verbose=$true
 
