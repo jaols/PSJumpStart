@@ -1,0 +1,5 @@
+#
+# Default parameters for local script
+#
+searchRootOU=""
+monthsUnused=9
