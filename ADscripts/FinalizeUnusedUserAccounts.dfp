@@ -2,5 +2,6 @@
 # Default parameters for local script
 #
 searchRootOU=""
-monthsUnused=9
+monthsDisabled=9
+exceptionGroup=""
 
