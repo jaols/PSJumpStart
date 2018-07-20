@@ -5,7 +5,10 @@
 
 #Local defaults for scripts
 
-#Use verbose mode in ALL called functions no matter nesting level!
+#Use verbose mode for ALL functions no matter nesting level!
 *:Verbose=$true
+
+#Use verbose mode for ALL Get-AD functions no matter nesting level!
+#Get-AD*:Verbose=$true
 
 

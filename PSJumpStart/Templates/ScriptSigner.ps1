@@ -4,18 +4,24 @@
 .DESCRIPTION
     Sign target script(s) using existing certificate. If existing certificate is missing a new is generated.
 .PARAMETER Path
-   	Target path for file to sign or folder name to sign all ps1 files.
+   	Target path for file to sign or folder name to sign all files.
+.PARAMETER FileType
+   	Suffix for files to sign. Default is ".ps1"
 .PARAMETER Recurse
    If Path is a folder the signijng will be done recursive
 .Notes
     Author: Jack Olsson
     Changes: 2018-07-11 First draft
+    
+    2018-07-20
+    Added support for file types to sign.
 #>
 [CmdletBinding(SupportsShouldProcess = $True)]
 param (
     [Parameter(Mandatory = $true,
                ValueFromPipelineByPropertyName=$true)]
     [string]$Path,
+    [string]$FileType = ".ps1",
     [switch]$Recurse
 )
 
@@ -82,7 +88,7 @@ if ($cert -eq $null) {
     }
 }
 
-Get-ChildItem -Path $Path -Filter "*.ps1" -Recurse:$Recurse.IsPresent | ForEach {    
+Get-ChildItem -Path $Path -Filter "*$FileType" -Recurse:$Recurse.IsPresent | ForEach {    
     if ($pscmdlet.ShouldProcess($_.FullName, "Set-AuthenticodeSignature")) {
         $result = Set-AuthenticodeSignature $_.FullName -Certificate $cert
         Write-Output "$($result.Status);$($_.FullName)"

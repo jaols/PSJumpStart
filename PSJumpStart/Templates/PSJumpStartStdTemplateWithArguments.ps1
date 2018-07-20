@@ -23,40 +23,41 @@ param (
     [switch]$flag
 )
 
-#region Init
+#region local functions 
 
 #Load default arguemts for this script.
 #Command prompt arguments will override file settings
 function GetLocalDefaultsFromDfpFiles($CallerInvocation) {        
     #Load script default settings
     foreach($settingsFile in (Get-SettingsFiles $CallerInvocation ".dfp")) {
-        Write-Verbose "File: [$settingsFile]"
-        if (Test-Path $settingsFile) {        
+        Write-Verbose "GetLocalDefaultsFromDfpFiles: [$settingsFile]"
+        if (Test-Path $settingsFile) {
             $settings = Get-Content $settingsFile
             #Enumerate settingsfile rows
             foreach($row in $settings) {
                 #Remarked lines are not processed
                 if (($row -match "=") -and ($row.Trim().SubString(0,1) -ne "#")) {
-                    $key = $row.Split('=')[0]                            
+                    $key = $row.Split('=')[0]
                     $var = Get-Variable $key -ErrorAction SilentlyContinue
                     if ($var -and !($var.Value))
                     {
-                        try {                
-                            Write-Host "Var: $key" 
+                        try {
                             $var.Value = Invoke-Expression $row.SubString($key.Length+1)
+                            Write-Verbose "GetLocalDefaultsFromDfpFiles: $key = $($var.Value)" 
                         } Catch {
                             $ex = $PSItem
                             $ex.ErrorDetails = "Err adding $key from $settingsFile. " + $PSItem.Exception.Message
                             throw $ex
                         }
                     }
-                   #Write-Host "$($var.Value)"
                 }
             }
         }
     }
 }
+#endregion
 
+#region Init
 $scriptPath = Split-Path -Parent $MyInvocation.MyCommand.Definition
 if (-not (Get-Module PSJumpStart)) {
     Import-Module PSJumpStart -Force
@@ -66,7 +67,7 @@ if (-not (Get-Module PSJumpStart)) {
 GetLocalDefaultsFromDfpFiles($MyInvocation)
 
 #Get global deafult settings when calling modules
-$PSDefaultParameterValues = Get-GlobalDefaultsFromDfpFiles($MyInvocation)
+$PSDefaultParameterValues = Get-GlobalDefaultsFromDfpFiles $MyInvocation -Verbose:$VerbosePreference
 
 #endregion
 

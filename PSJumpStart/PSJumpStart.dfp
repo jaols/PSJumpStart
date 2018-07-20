@@ -3,7 +3,9 @@
 # https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_parameters_default_values?view=powershell-6
 #
 #Set Global Verbose mode
-*:Verbose=$false
+#*:Verbose=$true
+
+#Set confirm to false by default
 *:Confirm=$false
 Format-Table:AutoSize=$true
 
@@ -11,7 +13,7 @@ Format-Table:AutoSize=$true
 Msg:EventLogName="PSJumpStart"
 Msg:useEventLog=$false
 Msg:useFileLog=$false
-Msg:logFilePath=$ExecutionContext.SessionState.Path
+Msg:logFilePath=$ExecutionContext.SessionState.Path.CurrentLocation.Path
 
 #Open separate window for Get-Help
 Get-Help:ShowWindow=$true

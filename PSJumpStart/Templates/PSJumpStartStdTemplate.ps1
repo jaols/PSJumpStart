@@ -11,6 +11,9 @@
 [CmdletBinding(SupportsShouldProcess = $True)]
 param ()
 
+#region local functions
+#endregion
+
 #region Init
 $scriptPath = Split-Path -Parent $MyInvocation.MyCommand.Definition
 if (-not (Get-Module PSJumpStart)) {
@@ -18,7 +21,7 @@ if (-not (Get-Module PSJumpStart)) {
 }
 
 #Get global deafult settings when calling modules
-$PSDefaultParameterValues = Get-GlobalDefaultsFromDfpFiles($MyInvocation)
+$PSDefaultParameterValues = Get-GlobalDefaultsFromDfpFiles $MyInvocation -Verbose:$VerbosePreference
 
 #endregion
 

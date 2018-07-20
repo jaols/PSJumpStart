@@ -164,6 +164,7 @@ function Msg {
 	$logstring = (Get-Date).ToString() + ";" + $Message
     
     if ($useEventLog.IsPresent) {
+        Write-Verbose "Msg:Use eventlog"
         #We will get an error if not running as administrator
         try {
             if (![system.diagnostics.eventlog]::SourceExists($scriptName)) {
@@ -176,15 +177,19 @@ function Msg {
         Write-Host "$Type;$logstring"            
     } else {
         if ($useFileLog.IsPresent) {
+            Write-Verbose "Msg:Use logfile"
             #Write to console
             Write-Host "$Type;$logstring"
-            if ([string]::IsNullOrEmpty($logFilePath) -or (!$logFile.Contains("\"))) {
+            
+            if ([string]::IsNullOrEmpty($logFilePath)) {
                 $logFilePath = $MyInvocation.PSCommandPath | Split-Path -Parent
             }
-
+                        
             if ([string]::IsNullOrEmpty($logFile)) {
-                $logfile =  $logFilePath + ($MyInvocation.PSCommandPath | Split-Path -Leaf) + "." + (Get-Date -Format 'yyyy-MM') + ".log"
-            }
+                $logfile =  $logFilePath + "\" + ($MyInvocation.PSCommandPath | Split-Path -Leaf) + "." + (Get-Date -Format 'yyyy-MM') + ".log"
+            } elseif (!$logFile.Contains("\")) {
+                $logfile =  $logFilePath + "\" + $logfile
+            }                        
 
             #Write to log file
             $stream = [System.IO.File]::AppendText($logFile)
@@ -192,6 +197,7 @@ function Msg {
 	        $stream.close()
 
         } else {
+            Write-Verbose "Msg:Use std-Out/std-Err"
             if ($Type -match "Err") {
                 Write-Error "$Type;$logstring"
             } else {
@@ -513,11 +519,11 @@ Param(
 
     $result = New-Object System.Management.Automation.DefaultParameterDictionary
     
-    foreach($settingsFile in (Get-SettingsFiles $CallerInvocation ".dfp")) {        
-        
-        if (Test-Path "$settingsFile") {
+    foreach($settingsFile in (Get-SettingsFiles $CallerInvocation ".dfp")) {                
+        if (Test-Path "$settingsFile") {            
+            Write-Verbose "Get-GlobalDefaultsFromDfpFiles:[$settingsFile]"
             $settings = Get-Content $settingsFile
-            foreach($row in $settings) {
+            foreach($row in $settings) {                
                 #Row Syntax FunctionName:Variable=Value/Code
                 if (($row -match ":") -and ($row -match "=") -and ($row.Trim().SubString(0,1) -ne "#")) {                    
                     $key = $row.Split('=')[0]               
@@ -528,14 +534,19 @@ Param(
                         try {
                             #Add value from XML (OR result from PS-code execution)
                             $result.Add($key,(Invoke-Expression $row.SubString($key.Length+1)))
+                            Write-Verbose "Get-GlobalDefaultsFromDfpFiles:$key = $($row.SubString($key.Length+1))" 
                         } catch {
                             $ex = $PSItem
                             $ex.ErrorDetails = "Err adding $key from $settingsFile. " + $PSItem.Exception.Message
                             throw $ex
                         }                    
+                    } else {
+                        Write-Verbose "Get-GlobalDefaultsFromDfpFiles:$key already set"
                     }
                 }
             }
+        } else {
+            Write-Verbose "Get-GlobalDefaultsFromDfpFiles:[$settingsFile] missing"
         }
     }
 
