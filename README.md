@@ -4,7 +4,7 @@
 
 ## Introduction
 
-The PowerShell PSJumpStart module uses the built-in features in PowerShell to create an environment for the Power Administrator. It is a set of files to jump start PowerShell script creation as well as some ready to use functions.
+The PowerShell PSJumpStart module uses the built-in features in PowerShell to create an environment for the Power Administrator. It is a set of files to jump start PowerShell script creation as well as some ready to use functions. The goal is to provide some simple start-up functions. Search the [PowerShell Gallery](https://www.powershellgallery.com/) or the internet if a more potent function is needed. 
 
 ## Features and content
 
@@ -36,7 +36,17 @@ Because we want to choose the depth of the PowerShell rabbit hole. Entry level t
 
 ## Practical usage
 
-Have a look in the `PSJumpStart.dfp`file (in the module folder) using a text editor. Those are the least significant default settings. Use them to set your preferred configuration.
+Have a look in the `PSJumpStart.dfp`file (in the module folder) using a text editor. Those are the least significant default settings. Use them to set your preferred configurations (see `$PSDefaultParameterValues` for details).
+
+### How to debug
+
+The problem; If you are calling a function in a loaded module and want to see the results from `Write-Verbose` you need to add `-Verbose:$VerbosePrefererence` in the arguments for the call. By using  `dfp` files you may activate debug mode for whatever part you need.
+
+#### Global debugging
+
+Edit the PSJumpStart module `dfp`file to activate debug mode for ALL scripts, modules and function calls: set `*:Verbose=$true`in the file. The next execution session will activate verbose mode across the board.
+
+#### Script debugging
 
 To debug your script as well as get `Write-Verbose`printouts from ALL used modules and functions;
 
@@ -44,13 +54,21 @@ To debug your script as well as get `Write-Verbose`printouts from ALL used modul
 2. Put `*:Verbose=$true`in it.
 3. Run the script to load `Verbose` mode in current session.
 
+Using the argument `-Verbose` at the command prompt will override the `dfp`file settings introducing the limits mentioned before, but may be needed at some scenarios.
+
+#### Function debugging
+
+If you only need to get verbose printout from a specific function you can add `Function-Name:Verbose=$true` in any `dfp` file.
+
 ### The templates
 
-In the `Templates`folder (living in the module folder) is a set of templates. Copy these to your preferred working space or use the command `Copy-PSTemplate` in the module.
+In the `Templates`folder (living in the module folder) is a set of templates. Use `Find-PSTemplate`in the PSJumpStart module to list the template files. Copy a template to your preferred working space by using `Copy-PSTemplate`.
 
 ### Script signing
 
-There is a little stand alone feature in the `Templates`folder for script signing. It will search for a valid `CodeSigning`  capable certificate on the local computer. If not found a new self signed certificate will be created and used for signing scripts.
+There is a little stand alone feature in the `Templates`folder for script signing. It will search for a valid `CodeSigning`  capable certificate on the local computer. If not found a new self signed certificate will be created. The found/new certificate is then used to sign single scripts or all scripts in a folder. 
+
+This feature is not dependent on the PSJumpStart module.
 
 ## Down the rabbit hole
 
@@ -58,7 +76,7 @@ Let's have a quick look at some of the main features in the package.
 
 ### `$PSDefaultParameterValues`
 
-The use of `pfd` files separates default parameters from the PowerShell scripts. The `dfp` files are loaded in a preset order where the first encountered setting is used. So user preference will override the default settings for the `psm1` module file. The preset order is defined in the `Get-SettingFiles` function. The `Get-GlobalDefaultsFromDfpFiles` populates the PowerShell variable from file content.
+The use of `dfp` files separates default parameters from the PowerShell scripts. The `dfp` files are loaded in a preset order where the first encountered setting is used. So user preference will override the default settings for the `psm1` module file. The preset order is defined in the `Get-SettingFiles` function. The `Get-GlobalDefaultsFromDfpFiles` populates the PowerShell variable from file content.
 
  As the `$PSDefaultParameterValues` may be set for all functions it is possible for `Write-Verbose` to present output from functions in `psm1` modules without typing `-Verbose:$VerbosePrefererence` in ALL function calls or the use of `Get-CallerPreference` command (which by the way is included for reference):
 
@@ -92,11 +110,11 @@ To ensure correct environment the `$CallerInvocation` is used as input parameter
 
 Some of the functions included has been found “out-there”. The author name and/or a link to the source is provided to give credit where credit is due.
 
-There are some references in the `Get-Help`notes section for some of the basic functions to dive deeper into the rabbit hole.
+There are some references in the `Get-Help`notes section for some of the basic functions to dive deeper into the rabbit hole. 
 
 ## Contribute
 
-Please feel free to suggest improvements or contribute with basic functions. As the end line from the movie `The Matrix` puts it:
+Please feel free to suggest improvements or contribute with functions. As the end line from the movie `The Matrix` puts it:
 
 "A world where anything is possible. Where we go from there is a choice I leave to you."
 
