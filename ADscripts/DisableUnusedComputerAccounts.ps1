@@ -1,6 +1,6 @@
 <#PSScriptInfo
 
-.VERSION 1.0.0
+.VERSION 1.0.1
 
 .GUID 0382d5e0-b1d9-4143-9539-5a6f7a13a5d1
 
@@ -24,8 +24,7 @@
 
 .EXTERNALSCRIPTDEPENDENCIES 
 
-.RELEASENOTES
-
+.RELEASENOTES 
 
 #>
 
@@ -50,7 +49,10 @@
     Standard parameter. Write info to EvenLog as well as std out.    
 .NOTES
     Author: Jack Olsson
-    Date:   2018-07-14        
+    Date:   2018-07-14    
+    
+    Changelog:
+    2018-08-01 Added support for retreiving ADserver if not set    
 
 #>
 [CmdletBinding(SupportsShouldProcess = $True)]
@@ -178,6 +180,10 @@ Msg "Start Execution"
 if ([string]::IsNullOrEmpty($monthsUnused) -or $monthsUnused -eq 0) {
     Msg "Please create a dfp file for standard values."
     $monthsUnused = 200
+}
+#Get ADserver to run ALL operations
+if ([string]::IsNullOrEmpty($ADserver)) {
+    $ADserver = (Get-ADDomainController ).Name
 }
 
 [datetime]$unusedTime = (Get-Date).AddMonths(-$monthsUnused)
