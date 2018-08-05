@@ -1,0 +1,51 @@
+<%#Standard script template with argument parsing%>
+<#
+.SYNOPSIS
+    <%= $ShortDescription %>
+
+.DESCRIPTION
+    <%= $Description %>
+
+.NOTES
+    Author: <%= whoami%>
+    Date: <%= Get-Date%>
+
+    ChangeLog
+
+<% ForEach($arg in $ParameterDefinition.Keys) { %>
+.PARAMETER <%= $arg %>
+    <%= ($ParameterDefinition[$arg]).Description %>        
+<% } %>
+#>
+[CmdletBinding()]
+Param(
+<% ForEach($arg in $ParameterDefinition.Keys) { 
+    if (![string]::IsNullOrEmpty(($ParameterDefinition[$arg]).Attrib)) {
+        $attribs = ($ParameterDefinition.$arg.Attrib).TrimEnd(',')
+        %><%="    [Parameter($attribs)]`n"%><%
+    }
+    %><%="    $($ParameterDefinition.$arg.Type)`$$arg"%><%
+
+    if (![string]::IsNullOrEmpty(($ParameterDefinition[$arg]).DefaultValue)) {
+        %><%="=$($ParameterDefinition.$arg.DefaultValue),`n"%><%
+    } else {
+        %><%=",`n"%><%
+    }
+}%>
+)
+
+#region Init
+
+$scriptPath = Split-Path -Parent $MyInvocation.MyCommand.Definition
+
+#endregion
+
+Write-Output "Start Execution"
+
+Write-Verbose "Script is in $scriptPath"
+
+if ($pscmdlet.ShouldProcess("ActiveCode", "Run Code")) {
+    #Put your commands/code here...
+}
+
+Write-Output "End Execution"
