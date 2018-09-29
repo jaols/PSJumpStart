@@ -38,19 +38,45 @@ Because we want to choose the depth of the PowerShell rabbit hole. Entry level t
 
 Have a look in the `PSJumpStart.dfp`file (in the module folder) using a text editor. Those are the least significant default settings. Use them to set your preferred configurations (see `$PSDefaultParameterValues` for details).
 
+### Using `dfp` files
+
+These files may be used to set default values for script input arguments as well as function call arguments. The syntax for setting default values for standard functions follow the `$PSDefaultParameterValues`
+
+`Function-Name:Argument-Name=value/code`
+
+To use a `dfp` file as a repository for standard input argument values to a `ps1 `  you remove the function name part of the line above
+
+`Argument-Name=value/code`
+
+So if you are using a site name argument in several scripts  ,`[string]$SiteName` , you may create a domain `dfp`file with `SiteName="www.whatever.com"`
+
+#### Arguments load order
+
+The `dfp`files are read in a specific order where the most significant setting will rule over the lower order settings. The order of loading is:
+
+1. Provided arguments will always override any file settings,
+2. User logon ID file name in script folder
+3. Logon provider file name (domain or local machine) in script folder
+4. Script name file in script folder
+5. Logon provider file name (domain or local machine) in PSJumpStart module folder
+6. Any other loaded module name in the PSJumpStart module folder (for instance an `ActiveDirectory.dfp` file)
+7. The `PSJumpStart.dfp`file in the module folder.
+
+Use the `-verbose` for any PSJumpStart template script to see the order of loading.
+
 ### How to debug
 
 The problem; If you are calling a function in a loaded module and want to see the results from `Write-Verbose` you need to add `-Verbose:$VerbosePrefererence` in the arguments for the call. By using  `dfp` files you may activate debug mode for whatever part you need.
 
 #### Global debugging
 
-Edit the PSJumpStart module `dfp`file to activate debug mode for ALL scripts, modules and function calls: set `*:Verbose=$true`in the file. The next execution session will activate verbose mode across the board.
+Edit the PSJumpStart module `dfp`file to activate debug mode for ALL scripts, modules and function calls: set `*:Verbose=$true`in the file. The next execution session will activate verbose mode across the board. This can be done by using a specific user `dfp`file so only that user will get verbose feedback.
 
-#### Script debugging
+#### Specific script debugging
 
 To debug your script as well as get `Write-Verbose`printouts from ALL used modules and functions;
 
-1. Create a `dfp`file with the same name as your script
+1. Create a `dfp`file with the same name as your script.
 2. Put `*:Verbose=$true`in it.
 3. Run the script to load `Verbose` mode in current session.
 
@@ -64,11 +90,15 @@ If you only need to get verbose printout from a specific function you can add `F
 
 In the `Templates`folder (living in the module folder) is a set of templates. Use `Find-PSTemplate`in the PSJumpStart module to list the template files. Copy a template to your preferred working space by using `Copy-PSTemplate`.
 
+### Local `psm1`file
+
+The empty `PSLocalJumpstart.psm1`is provided to support local customizations so you may upgrade this module. The local module is loaded with the PSJumpStart module.
+
 ### Script signing
 
 There is a little stand alone feature in the `Templates`folder for script signing. It will search for a valid `CodeSigning`  capable certificate on the local computer. If not found a new self signed certificate will be created. The found/new certificate is then used to sign single scripts or all scripts in a folder. 
 
-This feature is not dependent on the PSJumpStart module.
+This feature is **not** dependent on the PSJumpStart module.
 
 ## Down the rabbit hole
 
