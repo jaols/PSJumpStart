@@ -2,11 +2,13 @@
 $FunctionLib = @(Get-ChildItem -Path $PSScriptRoot\Functions\*.ps1 -ErrorAction SilentlyContinue)
 #Get Local lib function files
 $LocalLib = @(Get-ChildItem -Path $PSScriptRoot\LocalLib\*.ps1 -ErrorAction SilentlyContinue)
+$functionNames = @()
 
 #Import local lib functions
 foreach($Import in $LocalLib) {
     try {
         . $Import.FullName
+        $functionNames += ($Import.Name).Replace(".ps1","")
     }
     catch {
         Write-Error -Message "Failed to import function $($Import.FullName): $_"
@@ -17,17 +19,14 @@ foreach($Import in $LocalLib) {
 foreach($Import in $FunctionLib) {
     try {
         . $Import.FullName
+        $functionNames += ($Import.Name).Replace(".ps1","")
     }
     catch {
         Write-Error -Message "Failed to import function $($Import.FullName): $_"
     }
 }
-if ($LocalLib.Count -gt 0) {
-    Export-ModuleMember -Function $LocalLib
-}
-if ($FunctionLib.Count -gt 0) {
-    Export-ModuleMember -Function $FunctionLib
-}
+
+Export-ModuleMember -Function $functionNames
 
 #region useless code?
 function IsVerbose {
