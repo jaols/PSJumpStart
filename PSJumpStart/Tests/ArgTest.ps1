@@ -65,8 +65,6 @@ Msg "Start Execution"
 Write-Verbose "Value for One is $one"
 $two
 
-Trace-GlobalDefaultsFromDfpFiles($MyInvocation) | Format-Table
-
 #Should still be [int64]
 Write-Verbose "$($isint.GetType().FullName) ; $isint"
 

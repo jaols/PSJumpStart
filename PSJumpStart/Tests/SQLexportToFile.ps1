@@ -51,15 +51,15 @@ Msg "Start Execution"
 Msg "Test a stored procedure call"
 
 $query="Exec [dbo].[CustOrdersOrders] 'OCEAN'" 
-QuerySQL $query | Select-Object -ExpandProperty DataSet | Select-Object -ExpandProperty Tables | ExportDataTableToFile
+Invoke-SqlQuery $query | Select-Object -ExpandProperty DataSet | Select-Object -ExpandProperty Tables | Out-DataTableToFile
 
 Msg "SQL query with multiple output tables"
 
 $query="Select LastName,FirstName FROM [dbo].[Employees] 
     Select * FROM [dbo].[Shippers] "
         
-QuerySQL $query | Select-Object -ExpandProperty DataSet | Select-Object -ExpandProperty Tables | ForEach-Object {
-    ExportDataTableToFile -FileName "$($_.TableName) Mixed double.csv" -DataTable $_ 
+    Invoke-SqlQuery $query | Select-Object -ExpandProperty DataSet | Select-Object -ExpandProperty Tables | ForEach-Object {
+    Out-DataTableToFile -FileName "$($_.TableName) Mixed double.csv" -DataTable $_ 
 }
 
 Msg "End Execution"

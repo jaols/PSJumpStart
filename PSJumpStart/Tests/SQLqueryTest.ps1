@@ -66,7 +66,7 @@ Msg "Start Execution"
 Msg "Test a stored procedure call"
 
 $query="Exec [dbo].[CustOrdersOrders] 'OCEAN'"
-$res = QuerySQL $query
+$res = Invoke-SqlQuery $query
 dumpDBresult $res
 
 Msg "Test SQL query with double table result"
@@ -75,11 +75,11 @@ $query="Print 'Hello world'
     Select LastName,FirstName FROM [dbo].[Employees] 
     Select * FROM [dbo].[Shippers] "
         
-dumpDBresult (QuerySQL $query) 
+dumpDBresult (Invoke-SqlQuery $query) 
 
 Msg "Run ERROR query"
 $query = "Select Whatever from NoWay"
-$res = QuerySQL $query
+$res = Invoke-SqlQuery $query
 dumpDBresult $res
 
 
