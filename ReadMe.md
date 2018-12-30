@@ -1,15 +1,15 @@
 # PSJumpStart
 
-[Introduction](#intro)
-[Features and content](#Features-and-content)
-[Why?](#Why)
+*[Introduction](#intro)
+*[Features and content](#Features-and-content)
+*[Why?](#Why)
 
-<a name="intro" />
+<a name="intro"></a>
 ## Introduction
 
 The PowerShell PSJumpStart module uses the built-in features in PowerShell to create an environment for the Power Administrator. It is a set of files to jump start PowerShell script creation as well as some ready to use functions. The goal is to provide some simple start-up functions. Search the [PowerShell Gallery](https://www.powershellgallery.com/) or the internet if a more potent function is needed. 
 
-<a name="Features-and-content" />
+<a name="Features-and-content"></a>
 ## Features and content
 
 PSJumpstart uses `$PSDefaultParameterValues` to set local default parameters by using `dfp` files. These are read in a preset order so you may have different defaults for different scenarios.
