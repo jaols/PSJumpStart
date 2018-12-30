@@ -6,43 +6,35 @@
       <ScriptMethod>
         <Name>AppendValue</Name>
         <Script>
-            #This will ONLY work for simple content type(s)
-	        $key = $args[0]
-	        $data = $args[1]
+					param(	           
+		   			[parameter(Mandatory=$true,Position=0)]
+		   			[string]$key, 		   
+		   			[parameter(Mandatory=$true,Position=1)]
+		   			[object]$data
+					)
 	        if ($this.ContainsKey($key)) {
 		        $currentData = $this[$key]                
 		        $this.Remove($key)                
-                $this.Add($key,@($currentData,$value))
-
-                #switch -Wildcard ($currentData.GetType()) {
-	          	#    "String" {
-        	    #	    $this.Add($key,$currentData + $data)
-                #        break        
-	            #     }
-        	    #     "Int*" {
-	            #         $this.Add($key,$currentData + $data)
-	            #         break
-        	    #     }
-                #	 default {
-                #        $newData = @($currentData,$value)
-	            #        $this.Add($key,$newData)
-        	    #        break
-                #	 }
-	            #}		        
-		    } else {
-		        $this.Add($key,$data)
-	        }
+            $this.Add($key,@($currentData,$data))
+					} else {
+						$this.Add($key,$data)
+					}
         </Script>
       </ScriptMethod>
       <ScriptMethod>
         <Name>Replace</Name>
         <Script>
-	        $key = $args[0]
-	        $data = $args[1]
+					param(	           
+		   			[parameter(Mandatory=$true,Position=0)]
+		   			[string]$key, 		   
+		   			[parameter(Mandatory=$true,Position=1)]
+		   			[object]$data
+					)
 	        if ($this.ContainsKey($key)) {		        
 		        $this.Remove($key)
-	        } 
-		    $this.Add($key,$data)	        
+	        }
+					 
+		    	$this.Add($key,$data)	        
         </Script>
       </ScriptMethod>
     </Members>

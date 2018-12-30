@@ -2,31 +2,32 @@
 $FunctionLib = @(Get-ChildItem -Path $PSScriptRoot\Functions\*.ps1 -ErrorAction SilentlyContinue)
 #Get Local lib function files
 $LocalLib = @(Get-ChildItem -Path $PSScriptRoot\LocalLib\*.ps1 -ErrorAction SilentlyContinue)
-$functionNames = @()
-
-#Import local lib functions
-foreach($Import in $LocalLib) {
-    try {
-        . $Import.FullName
-        $functionNames += ($Import.Name).Replace(".ps1","")
-    }
-    catch {
-        Write-Error -Message "Failed to import function $($Import.FullName): $_"
-    }
-}
+#$functionNames = @()
 
 #Import PSJumpstart functions
 foreach($Import in $FunctionLib) {
     try {
         . $Import.FullName
-        $functionNames += ($Import.Name).Replace(".ps1","")
+        #$functionNames += ($Import.Name).Replace(".ps1","")
     }
     catch {
         Write-Error -Message "Failed to import function $($Import.FullName): $_"
     }
 }
 
-Export-ModuleMember -Function $functionNames
+#Import local lib functions (override any PSJumpstart modules)
+foreach($Import in $LocalLib) {
+    try {
+        . $Import.FullName
+        #$functionNames += ($Import.Name).Replace(".ps1","")
+    }
+    catch {
+        Write-Error -Message "Failed to import function $($Import.FullName): $_"
+    }
+}
+
+#Export-ModuleMember -Function $functionNames
+Export-ModuleMember -Function *
 
 #region useless code?
 function IsVerbose {

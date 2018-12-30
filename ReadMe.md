@@ -1,11 +1,15 @@
 # PSJumpStart
 
-[TOC]
+[Introduction](#intro)
+[Features and content](#'Features and content')
+[Why?](#'Why?')
 
+<a name='intro'/>
 ## Introduction
 
 The PowerShell PSJumpStart module uses the built-in features in PowerShell to create an environment for the Power Administrator. It is a set of files to jump start PowerShell script creation as well as some ready to use functions. The goal is to provide some simple start-up functions. Search the [PowerShell Gallery](https://www.powershellgallery.com/) or the internet if a more potent function is needed. 
 
+<a name='Features and content'/>
 ## Features and content
 
 PSJumpstart uses `$PSDefaultParameterValues` to set local default parameters by using `dfp` files. These are read in a preset order so you may have different defaults for different scenarios.
@@ -18,8 +22,9 @@ A template `CMD` file is also provided for calling PowerShell scripts with `StdO
 
 Some fully featured test/sample scripts are included for reference.
 
-One sample `ps1xml` file is included for enhancing the `HashTable` variable.
+One sample `ps1xml` file is included for extending the `HashTable` object type with methods for `Replace` and `AppendValue`.
 
+<a name='Why?'></a>
 ## Why?
 
 Because we are system administrators that just want to get going with PowerShell using basic supporting functions for common use.
@@ -64,6 +69,16 @@ The `dfp`files are read in a specific order where the most significant setting w
 
 Use the `-verbose` for any PSJumpStart template script to see the order of loading.
 
+### The art of logging
+
+The `dfp`files may also be used to setup the logging environment by setting default variables for the `Msg`function. It may write output to log files, event log or output to console only. Please remember to run any PowerShell as Adminstrator the first time to create any custom log name in the event log. The use of the settings files will enable you to set different event log names, but use this carefully as any script registered for a log name cannot write to another event log name.
+
+#### The Task Scheduler problem
+
+This module comes with a `.cmd` file used for calling its corresponding PowerShell. The `runCleanupEmptyGroups.cmd` will launch the `CleanupEmptyGroups.ps1` PowerShell script with any provided arguments. The default behaviour of this template is to catch any output from the PowerShell and dump it to a log file in a `logs` sub folder. If any unhandled exceptions occur they will be put in a separate `ERR_` log file.
+The primary use for this is in the Task Scheduler. If you launch a PowerShell script directly from Task Scheduler you will not be able to get the exception data written by the PowerShell script. The `.cmd` file will trap and log the information.
+The recomendation for Task Scheduled scripts is using a `.dfp` named after the service account running the job. Then you may turn off any other logging method for `.ps1` files and let the `.cmd` file handle logging to file.
+
 ### How to debug
 
 The problem; If you are calling a function in a loaded module and want to see the results from `Write-Verbose` you need to add `-Verbose:$VerbosePrefererence` in the arguments for the call. By using  `dfp` files you may activate debug mode for whatever part you need.
@@ -90,9 +105,9 @@ If you only need to get verbose printout from a specific function you can add `F
 
 In the `Templates`folder (living in the module folder) is a set of templates. Use `Find-PSTemplate`in the PSJumpStart module to list the template files. Copy a template to your preferred working space by using `Copy-PSTemplate`.
 
-### Local `psm1`file
+### Local customized functions
 
-The empty `PSLocalJumpstart.psm1`is provided to support local customizations so you may upgrade this module. The local module is loaded with the PSJumpStart module.
+During loading of functions the `PSJumpStart.psm1`file will load any `ps1`function files from the folder `LocalLib` in the modules folder. Customized functions will override any PSJumpStart functions. So you may add any local functions to enhance the module.
 
 ### Script signing
 
@@ -122,7 +137,7 @@ More information on the use of `$PSDefaultParameterValus`:
 
 ### The `Msg` function
 
-The unified way of writing output information from calling scripts. Do not call this function from any `psm1` functions as it does not support nested environments (yet). Use `Write-Verbose` to debug `psm1` functions instead. 
+The unified way of writing output information from calling scripts. Do not use this function from any `psm1` functions as it does not support nested environments (yet). Use `Write-Verbose` to debug `psm1` functions instead. 
 
 ### The `$CallerInvocation` story
 
@@ -144,7 +159,7 @@ The PSJumpStart module will add two methods to the `Hashtable` variable type.  T
 
 ## Stolen with pride
 
-Some of the functions included has been found “out-there”. The author name and/or a link to the source is provided to give credit where credit is due.
+Some of the functions included has been found ï¿½out-thereï¿½. The author name and/or a link to the source is provided to give credit where credit is due.
 
 There are some references in the `Get-Help`notes section for some of the basic functions to dive deeper into the rabbit hole. 
 
