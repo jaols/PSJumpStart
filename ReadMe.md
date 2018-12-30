@@ -1,15 +1,37 @@
 # PSJumpStart
 
-*[Introduction](#intro)
-*[Features and content](#Features-and-content)
-*[Why?](#Why)
+- [PSJumpStart](#psjumpstart)
+  * [Introduction](#introduction)
+  * [Features and content](#features-and-content)
+  * [Why?](#why-)
+  * [Practical usage](#practical-usage)
+    + [Using `dfp` files](#using--dfp--files)
+      - [Arguments load order](#arguments-load-order)
+    + [The art of logging](#the-art-of-logging)
+      - [The Task Scheduler problem](#the-task-scheduler-problem)
+    + [How to debug](#how-to-debug)
+      - [Global debugging](#global-debugging)
+      - [Specific script debugging](#specific-script-debugging)
+      - [Function debugging](#function-debugging)
+    + [The templates](#the-templates)
+    + [Local customized functions](#local-customized-functions)
+    + [Script signing](#script-signing)
+  * [Down the rabbit hole](#down-the-rabbit-hole)
+    + [`$PSDefaultParameterValues`](#--psdefaultparametervalues-)
+    + [The `Msg` function](#the--msg--function)
+    + [The `$CallerInvocation` story](#the---callerinvocation--story)
+    + [`Hashtable` type add-on](#-hashtable--type-add-on)
+    + [Notes](#notes)
+  * [Stolen with pride](#stolen-with-pride)
+  * [Contribute](#contribute)
 
-<a name="intro"></a>
+<small><i><a href='http://ecotrust-canada.github.io/markdown-toc/'>Table of contents generated with markdown-toc</a></i></small>
+
+
 ## Introduction
 
 The PowerShell PSJumpStart module uses the built-in features in PowerShell to create an environment for the Power Administrator. It is a set of files to jump start PowerShell script creation as well as some ready to use functions. The goal is to provide some simple start-up functions. Search the [PowerShell Gallery](https://www.powershellgallery.com/) or the internet if a more potent function is needed. 
 
-<a name="Features-and-content"></a>
 ## Features and content
 
 PSJumpstart uses `$PSDefaultParameterValues` to set local default parameters by using `dfp` files. These are read in a preset order so you may have different defaults for different scenarios.
@@ -24,7 +46,6 @@ Some fully featured test/sample scripts are included for reference.
 
 One sample `ps1xml` file is included for extending the `HashTable` object type with methods for `Replace` and `AppendValue`.
 
-<a name="Why"></a>
 ## Why?
 
 Because we are system administrators that just want to get going with PowerShell using basic supporting functions for common use.
