@@ -25,13 +25,11 @@
   * [Stolen with pride](#stolen-with-pride)
   * [Contribute](#contribute)
 
-<small><i><a href='http://ecotrust-canada.github.io/markdown-toc/'>Table of contents generated with markdown-toc</a></i></small>
-
-
+<a name=introduction></a>
 ## Introduction
 
 The PowerShell PSJumpStart module uses the built-in features in PowerShell to create an environment for the Power Administrator. It is a set of files to jump start PowerShell script creation as well as some ready to use functions. The goal is to provide some simple start-up functions. Search the [PowerShell Gallery](https://www.powershellgallery.com/) or the internet if a more potent function is needed. 
-
+<a name=features-and-content></a>
 ## Features and content
 
 PSJumpstart uses `$PSDefaultParameterValues` to set local default parameters by using `dfp` files. These are read in a preset order so you may have different defaults for different scenarios.
@@ -180,7 +178,7 @@ The PSJumpStart module will add two methods to the `Hashtable` variable type.  T
 
 ## Stolen with pride
 
-Some of the functions included has been found �out-there�. The author name and/or a link to the source is provided to give credit where credit is due.
+Some of the functions included has been found "out-there". The author name and/or a link to the source is provided to give credit where credit is due.
 
 There are some references in the `Get-Help`notes section for some of the basic functions to dive deeper into the rabbit hole. 
 
