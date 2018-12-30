@@ -39,15 +39,30 @@ Function Send-MailMessageUsingHtmlTemplate {
         
         if (Test-Path $TemplateFile) {        
             $messageBody = Get-Content -Path $TemplateFile | Out-String
+
+            #Use corresponding txt file to override input paramameters (if found)
+            $parameterFile = $TemplateFile.Substring(0,$TemplateFile.LastIndexOf('.')) + ".txt"
+            if (Test-Path($parameterFile)) {
+                #Prameter file syntax
+                #$Subject="Standard subject line for this template file"
+                Get-Content -Path $parameterFile | Invoke-Expression
+            }
     
+            #Replace "key" text in template and subject line with hash content
             ForEach($key in $replacementHash.Keys) {
+                $Subject = $Subject -replace $key,$replacementHash[$key]
                 $messageBody = $messageBody -replace $key,$replacementHash[$key]
             }
+
             Write-Verbose "Send mail to [$MailTo] from [$MailFrom] using [$SMTPserver]"
-            Send-MailMessage -SmtpServer $SMTPserver -To $MailTo -From $MailFrom -Subject $Subject -Body $messageBody -BodyAsHtml -ErrorAction Stop -Encoding UTF8 -Attachments $Attachments
+            if ($Attachments) {
+                Send-MailMessage -SmtpServer $SMTPserver -To $MailTo -From $MailFrom -Subject $Subject -Body $messageBody -BodyAsHtml -ErrorAction Stop -Encoding UTF8 -Attachments $Attachments
+            } else {
+                Send-MailMessage -SmtpServer $SMTPserver -To $MailTo -From $MailFrom -Subject $Subject -Body $messageBody -BodyAsHtml -ErrorAction Stop -Encoding UTF8
+            }
            
         } else {
-            Msg "Missing mail template file $TemplateFile" "Warning"
+            throw [System.IO.FileNotFoundException] "Missing mail template file $TemplateFile"
         }
     }
     
