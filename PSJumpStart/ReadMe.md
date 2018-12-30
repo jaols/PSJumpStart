@@ -1,6 +1,29 @@
 # PSJumpStart
 
-[TOC]
+- [PSJumpStart](#psjumpstart)
+  * [Introduction](#introduction)
+  * [Features and content](#features-and-content)
+  * [Why?](#why-)
+  * [Practical usage](#practical-usage)
+    + [Using `dfp` files](#using--dfp--files)
+      - [Arguments load order](#arguments-load-order)
+    + [The art of logging](#the-art-of-logging)
+      - [The Task Scheduler problem](#the-task-scheduler-problem)
+    + [How to debug](#how-to-debug)
+      - [Global debugging](#global-debugging)
+      - [Specific script debugging](#specific-script-debugging)
+      - [Function debugging](#function-debugging)
+    + [The templates](#the-templates)
+    + [Local customized functions](#local-customized-functions)
+    + [Script signing](#script-signing)
+  * [Down the rabbit hole](#down-the-rabbit-hole)
+    + [`$PSDefaultParameterValues`](#--psdefaultparametervalues-)
+    + [The `Msg` function](#the--msg--function)
+    + [The `$CallerInvocation` story](#the---callerinvocation--story)
+    + [`Hashtable` type add-on](#-hashtable--type-add-on)
+    + [Notes](#notes)
+  * [Stolen with pride](#stolen-with-pride)
+  * [Contribute](#contribute)
 
 ## Introduction
 
@@ -154,7 +177,7 @@ The PSJumpStart module will add two methods to the `Hashtable` variable type.  T
 
 ## Stolen with pride
 
-Some of the functions included has been found �out-there�. The author name and/or a link to the source is provided to give credit where credit is due.
+Some of the functions included has been found "out-there". The author name and/or a link to the source is provided to give credit where credit is due.
 
 There are some references in the `Get-Help`notes section for some of the basic functions to dive deeper into the rabbit hole. 
 
