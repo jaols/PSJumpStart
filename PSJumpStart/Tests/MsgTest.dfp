@@ -5,9 +5,17 @@ one="Its a messing mess"
 #
 #Global default parameters
 #
+# Set verbose for msg function
+msg:Verbose=$true
+# Set default type to ERROR
 #msg:Type="ERROR"
-#msg:useEventLog=$true
+
+# Use Eventlog for messages
+msg:useEventLog=$false
+msg:EventLogName="PSJumpstart"
+
+# Use File-logging (both may be active at once)
 msg:useFileLog=$true
-msg:logFile=$(Split-Path -Parent $MyInvocation.PSCommandPath) + "\Logs\" + $(Split-Path -Leaf $MyInvocation.PSCommandPath) + "." + (Get-Date -Format 'yyyy-MM') + ".Log"
+#msg:logFile=$(Split-Path -Parent $MyInvocation.PSCommandPath) + "\Logs\" + $(Split-Path -Leaf $MyInvocation.PSCommandPath) + "." + (Get-Date -Format 'yyyy-MM') + ".Log"
 
 

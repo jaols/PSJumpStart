@@ -1,23 +1,5 @@
-#Load standard arguments from file (even evaluate code)
-#Run code from PSM-file?
-#scriptfilename -> domain name/server name -> global settings
-[CmdletBinding(SupportsShouldProcess = $True, DefaultParameterSetName='FileLog')]
-Param(
-     [parameter(Position=0,mandatory=$false)]
-	 [string]$Message,
- 	 [parameter(mandatory=$false)]     
-	 [string]$Type = "INFORMATION",
-     [parameter(ParameterSetName='EventLog')]
-     [switch]$useEventLog,
-  	 [parameter(ParameterSetName='EventLog',mandatory=$false)]
-	 [string]$EventLogName = "Application",
-  	 [parameter(ParameterSetName='EventLog',mandatory=$false)]
-	 [int]$EventId = 4695,     
-     [parameter(ParameterSetName='FileLog')]
-     [switch]$useFileLog,
-     [parameter(ParameterSetName='FileLog')]
-     [string]$logPath
-)
+[CmdletBinding()]
+Param()
 
 #Load default arguemts for this script from the dfp setting files.
 #Command prompt arguments will override any settings
@@ -50,42 +32,43 @@ function GetLocalDefaultsFromDfpFiles($CallerInvocation) {
     }
 }
 
-function ImportModuleFromAnyLocation($CallerInvocation,$ModuleName) {
-    try {
-        #Try loading module from std-PowerShell locations:
-        # C:\Users\%userID%\Documents\WindowsPowerShell\Modules or something like that
-        Import-Module $ModuleName -Force
-    } catch {
-        #OK then let's search for it
-        Import-Module "$(Split-Path -parent $CallerInvocation.MyCommand.Definition)\PSJumpStart.psm1" -Force
-    }
+function NestedMessage($firstMessage) {
+    Msg $firstMessage    
+    NestedNestedMessage $firstMessage
 }
+
+function NestedNestedMessage($secondLevelMessage) {    
+    Msg $secondLevelMessage
+}
+#Always re-load module
 get-module PSJumpStart | Remove-Module;
 
-
-#PATH: C:\Users\%userID%\Documents\WindowsPowerShell\Modules\PSJumpStart??
-#Import-Module "PSJumpStart" -Force
-
 #Load Module from script location 
-Import-Module "$(Split-Path -parent $MyInvocation.MyCommand.Definition)\PSJumpStart.psm1" -Force
+Import-Module "$(Split-Path -parent $MyInvocation.MyCommand.Definition)\..\PSJumpStart.psm1" -Force
 
 #Get Local variable default values from external DFP-files
 GetLocalDefaultsFromDfpFiles($MyInvocation)
 
 #Get global deafult settings when calling modules
 $PSDefaultParameterValues = Get-GlobalDefaultsFromDfpFiles($MyInvocation)
+#$Global:PSDefaultParameterValues = $PSDefaultParameterValues.Clone()
 
 
 Msg "Start Execution"
 
+#The verbose message will not be logged.
 Write-Verbose "Olala"
 
-$TheHash = @{}
+#If -useFileLog is active the error will be put in that as well
+Msg "Error has occurred. This messsage will be put in the eventlog. Regardless of other settings" "Error" -useEventLog
 
-AddToHash $TheHash "test" "First value to have."
-AddToHash $TheHash "test" " Add this as well"
+Msg "This message will be handled accoring to dfp settings."
 
-$TheHash
+NestedMessage "This is a local nested function call"
+
+#Load external nested function
+. "$(Split-Path -parent $MyInvocation.MyCommand.Definition)\NestedMsgCall.ps1"
+nestedMsg "External function for message testing"
 
 
 Msg "End Execution"

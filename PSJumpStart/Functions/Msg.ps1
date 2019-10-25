@@ -3,7 +3,7 @@ function Msg {
         .Synopsis
            Main output function.
         .DESCRIPTION
-           Writes messages to std-out OR host.
+           Writes messages to file log and/or eventvwr std-out/std-err OR host.
         .PARAMETER Message
            String to show and/or log to file or eventlog.
         .PARAMETER Type
@@ -38,71 +38,71 @@ function Msg {
     
            Writes message to console (Write-Host) and to the standard log file name.
         #>
-        [CmdletBinding(SupportsShouldProcess = $True, DefaultParameterSetName='FileLog')]
-        Param(
-         [parameter(Position=0,mandatory=$true)]
-         $Message,
-          [parameter(Position=1,mandatory=$false)]
-         [string]$Type = "INFORMATION",
-         [parameter(ParameterSetName='EventLog')]
-         [switch]$useEventLog,
-           [parameter(ParameterSetName='EventLog',mandatory=$false)]
-         [string]$EventLogName = "Application",
-           [parameter(ParameterSetName='EventLog',mandatory=$false)]
-         [int]$EventId = 4695,     
-         [parameter(ParameterSetName='FileLog')]
-         [switch]$useFileLog,
-         [parameter(ParameterSetName='FileLog')]
-         [string]$logFile,
-         [parameter(ParameterSetName='FileLog')]
-         [string]$logFilePath
-    
-        )
+    [CmdletBinding(SupportsShouldProcess = $True)]
+    Param(
+        [parameter(Position = 0, mandatory = $true)]
+        $Message,
+        [parameter(Position = 1, mandatory = $false)]
+        [string]$Type = "INFORMATION",        
+        [switch]$useEventLog,
+        [string]$EventLogName = "Application",
+        [int]$EventId = 4695,     
+        [switch]$useFileLog,
+        [string]$logFile,
+        [string]$logFilePath    
+    )
         
-        $scriptName = Split-Path -Leaf $MyInvocation.PSCommandPath  
-        $logstring = (Get-Date).ToString() + ";" + $Message
+    $scriptName = Split-Path -Leaf $MyInvocation.PSCommandPath  
+    $logstring = (Get-Date).ToString() + ";" + $Message
         
-        if ($useEventLog.IsPresent) {
-            Write-Verbose "Msg:Use eventlog"
-            #We will get an error if not running as administrator
-            try {
-                if (![system.diagnostics.eventlog]::SourceExists($scriptName)) {
-                    [system.diagnostics.EventLog]::CreateEventSource($scriptName, $EventLogName)
-                }
-                Write-EventLog -LogName $EventLogName -Source $scriptName -EntryType $Type -Message $Message -EventId $EventId -Category 0
-            } catch {
-                Write-Error "ERROR;Run as ADMINISTRATOR;$($PSItem.Exception.Message)"
+    if ($useEventLog.IsPresent) {
+        Write-Verbose "Msg:Use eventlog"
+        #We will get an error if not running as administrator
+        try {
+            if (![system.diagnostics.eventlog]::SourceExists($scriptName)) {
+                [system.diagnostics.EventLog]::CreateEventSource($scriptName, $EventLogName)
             }
-            Write-Host "$Type;$logstring"            
-        } else {
-            if ($useFileLog.IsPresent) {
-                Write-Verbose "Msg:Use logfile"
-                #Write to console
-                Write-Host "$Type;$logstring"
-                
-                if ([string]::IsNullOrEmpty($logFilePath)) {
-                    $logFilePath = $MyInvocation.PSCommandPath | Split-Path -Parent
-                }
-                            
-                if ([string]::IsNullOrEmpty($logFile)) {
-                    $logfile =  $logFilePath + "\" + ($MyInvocation.PSCommandPath | Split-Path -Leaf) + "." + (Get-Date -Format 'yyyy-MM') + ".log"
-                } elseif (!$logFile.Contains("\")) {
-                    $logfile =  $logFilePath + "\" + $logfile
-                }                        
-    
-                #Write to log file
-                $stream = [System.IO.File]::AppendText($logFile)
-                $stream.WriteLine($logstring)
-                $stream.close()
-    
-            } else {
-                Write-Verbose "Msg:Use std-Out/std-Err"
-                if ($Type -match "Err") {
-                    Write-Error "$Type;$logstring"
-                } else {
-                    Write-Output "$Type;$logstring"
-                }
-            }    
+            Write-EventLog -LogName $EventLogName -Source $scriptName -EntryType $Type -Message $Message -EventId $EventId -Category 0
         }
+        catch {
+            Write-Error "ERROR;Run as ADMINISTRATOR;$($PSItem.Exception.Message)"
+        }        
     }
+    
+    if ($useFileLog.IsPresent) {
+        Write-Verbose "Msg:Use logfile"
+                
+        if ([string]::IsNullOrEmpty($logFilePath)) {
+            $logFilePath = $MyInvocation.PSCommandPath | Split-Path -Parent
+        }
+                            
+        if ([string]::IsNullOrEmpty($logFile)) {
+            $logfile = $logFilePath + "\" + ($MyInvocation.PSCommandPath | Split-Path -Leaf) + "." + (Get-Date -Format 'yyyy-MM') + ".log"
+        }
+        elseif (!$logFile.Contains("\")) {
+            $logfile = $logFilePath + "\" + $logfile
+        }                        
+    
+        #Write to log file
+        $stream = [System.IO.File]::AppendText($logFile)
+        $stream.WriteLine($logstring)
+        $stream.close()
+    
+    }
+    
+    if ($useFileLog.IsPresent -or $useEventLog.IsPresent) {
+        #Write to console
+        Write-Host "$Type;$logstring"
+    }
+    else {
+
+        Write-Verbose "Msg:Use std-Out/std-Err"
+        if ($Type -match "Err") {
+            Write-Error "$Type;$logstring"
+        }
+        else {
+            Write-Output "$Type;$logstring"
+        }
+    }        
+}
     
