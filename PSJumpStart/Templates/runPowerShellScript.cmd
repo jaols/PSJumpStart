@@ -21,7 +21,7 @@ REM This line will catch output to same file and folder
 REM PowerShell -File "%~dp0%MyName:~3%.ps1" %* >> %StdLog% 2>&1
 
 REM This line will launch with a separate ERROR-log
-PowerShell -File "%~dp0%MyName:~3%.ps1" %* >> %StdLog% 2>> %ErrLog%
+PowerShell -Command "%~dp0%MyName:~3%.ps1" %* >> %StdLog% 2>> %ErrLog%
 
 REM Remove error log if empty
 findstr "^" %ErrLog% || del %ErrLog% >nul 

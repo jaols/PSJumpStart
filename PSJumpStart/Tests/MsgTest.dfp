@@ -1,9 +1,5 @@
 #
-# Default parameters for local script
-#
-one="Its a messing mess"
-#
-#Global default parameters
+#Global default parameters for function "msg"
 #
 # Set verbose for msg function
 msg:Verbose=$true

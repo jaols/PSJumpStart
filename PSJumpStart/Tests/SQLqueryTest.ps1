@@ -47,6 +47,7 @@ $PSDefaultParameterValues = Get-GlobalDefaultsFromDfpFiles($MyInvocation)
 #endregion
 
 function dumpDBresult($dbResult) {
+    #Show any query result messages from the SQL-execution (error in SQL syntax)
     Msg $dbResult.Messages
 
     Msg("Number of tables: " + $dbResult.DataSet.Tables.Count)

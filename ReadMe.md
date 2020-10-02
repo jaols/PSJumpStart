@@ -156,7 +156,13 @@ More information on the use of `$PSDefaultParameterValus`:
 
 ### The `Msg` function
 
-The unified way of writing output information from calling scripts. To use this function from any `psm1` function or nested functions, you need to retreive  $PSDefaultParameterValues = (Get-Variable -Name PSDefaultParameterValues -Scope Global).Value. 
+The unified way of writing output information from calling scripts. There are a number of arguments available when calling this function making it possible to write output to log file as well as windows Eventlog. Use `.dfp` files to set default values for input arguments. See the `MsgTest.dfp`file included in the module files for inspiration. 
+
+The `Msg`-function will write messages using  `Write-Output` if it does not write output to a log file or eventlog. This will write messages to the std-out pipe. As PowerShell does not have a separated function output pipe you need to have this in mind when using `Msg`in called functions who returns data.
+
+To use this function from any `psm1` function or nested functions, you may need to retrieve the global content of `$PSDefaultParameterValues` adding the following code line:
+
+ `$PSDefaultParameterValues = (Get-Variable -Name PSDefaultParameterValues -Scope Global).Value`
 
 ### The `$CallerInvocation` story
 
@@ -172,7 +178,9 @@ The PSJumpStart module will add two methods to the `Hashtable` variable type.  T
 
 [Some words on `Hashtables`](https://kevinmarquette.github.io/2016-11-06-powershell-hashtable-everything-you-wanted-to-know-about/)
 
-### Notes
+### Notes/Tips
+
+The folder `Tests` included in this package has some code samples for calling functions in the module. For example `SQLqueryTest.ps1` where the local function `dumpDBresult` explores the result from calling `Invoke-SqlQuery`. 
 
 [A nice article on the practical use of CustomObjects in PowerShell](https://social.technet.microsoft.com/wiki/contents/articles/7804.powershell-creating-custom-objects.aspx)
 

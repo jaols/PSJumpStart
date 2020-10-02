@@ -35,6 +35,9 @@ function GetLocalDefaultsFromDfpFiles($CallerInvocation) {
 function NestedMessage($firstMessage) {
     Msg $firstMessage    
     NestedNestedMessage $firstMessage
+
+    #Return calc
+    3+8
 }
 
 function NestedNestedMessage($secondLevelMessage) {    
@@ -64,11 +67,12 @@ Msg "Error has occurred. This messsage will be put in the eventlog. Regardless o
 
 Msg "This message will be handled accoring to dfp settings."
 
-NestedMessage "This is a local nested function call"
+$return=NestedMessage "This is a local nested function call"
+$return
 
 #Load external nested function
 . "$(Split-Path -parent $MyInvocation.MyCommand.Definition)\NestedMsgCall.ps1"
-nestedMsg "External function for message testing"
+FirstMsg "External function for message testing"
 
 
 Msg "End Execution"
