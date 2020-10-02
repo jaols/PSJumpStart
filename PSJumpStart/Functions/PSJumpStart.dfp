@@ -15,6 +15,9 @@ Msg:useEventLog=$false
 Msg:useFileLog=$false
 Msg:logFilePath=$ExecutionContext.SessionState.Path.CurrentLocation.Path
 
+#Use local CSV separator for ExportDataTableToFile function
+ExportDataTableToFile:CSVseparator=([System.Globalization.CultureInfo]::CurrentCulture.TextInfo.ListSeparator)
+
 #Open separate window for Get-Help
 Get-Help:ShowWindow=$true
 #Set default SearchRoot for all Get-AD* commands

@@ -89,7 +89,7 @@ Use the `-verbose` for any PSJumpStart template script to see the order of loadi
 
 ### The art of logging
 
-The `dfp`files may also be used to setup the logging environment by setting default variables for the `Msg`function. It may write output to log files, event log or output to console only. Please remember to run any PowerShell as Adminstrator the first time to create any custom log name in the event log. The use of the settings files will enable you to set different event log names, but use this carefully as any script registered for a log name cannot write to another event log name.
+The `dfp`files may also be used to setup the logging environment by setting default variables for the `Msg`function. It may write output to log files, event log or output to console only. Please remember to run any PowerShell as Adminstrator the first time to create any custom log name in the event log. The use of the settings files will enable you to set different event log names, but use this carefully as any script registered for a log name cannot write to another event log name without removing the source using `Remove-Eventlog`.
 
 #### The Task Scheduler problem
 
@@ -100,6 +100,7 @@ The recomendation for Task Scheduled scripts is using a `.dfp` named after the s
 ### How to debug
 
 The problem; If you are calling a function in a loaded module and want to see the results from `Write-Verbose` you need to add `-Verbose:$VerbosePrefererence` in the arguments for the call. By using  `dfp` files you may activate debug mode for whatever part you need.
+Please note that the global variable `$PSDefaultParameterValues` is lost in nested `psm1` function calls. So if you call a sub-function from a `psm1` function you need to retreive the content of `$PSDefaultParameterValues` into the calling `psm1` function using `$PSDefaultParameterValues = (Get-Variable -Name PSDefaultParameterValues -Scope Global).Value`
 
 #### Global debugging
 
@@ -141,7 +142,7 @@ Let's have a quick look at some of the main features in the package.
 
 The use of `dfp` files separates default parameters from the PowerShell scripts. The `dfp` files are loaded in a preset order where the first encountered setting is used. So user preference will override the default settings for the `psm1` module file. The preset order is defined in the `Get-SettingFiles` function. The `Get-GlobalDefaultsFromDfpFiles` populates the PowerShell variable from file content.
 
- As the `$PSDefaultParameterValues` may be set for all functions it is possible for `Write-Verbose` to present output from functions in `psm1` modules without typing `-Verbose:$VerbosePrefererence` in ALL function calls or the use of `Get-CallerPreference` command (which by the way is included for reference):
+ As the `$PSDefaultParameterValues` may be set for all functions it is possible for `Write-Verbose` to present output from directly called functions in `psm1` modules without typing `-Verbose:$VerbosePrefererence` in ALL function calls. To ensure debugging in nested `psm1` function calls you need to add the command `$PSDefaultParameterValues = (Get-Variable -Name PSDefaultParameterValues -Scope Global).Value` in the calling `psm1` function.
 
 [The story behind the `Get-CallerPreference`function](https://blogs.technet.microsoft.com/heyscriptingguy/2014/04/26/weekend-scripter-access-powershell-preference-variables/)
 
@@ -155,7 +156,7 @@ More information on the use of `$PSDefaultParameterValus`:
 
 ### The `Msg` function
 
-The unified way of writing output information from calling scripts. Do not use this function from any `psm1` functions as it does not support nested environments (yet). Use `Write-Verbose` to debug `psm1` functions instead. 
+The unified way of writing output information from calling scripts. To use this function from any `psm1` function or nested functions, you need to retreive  $PSDefaultParameterValues = (Get-Variable -Name PSDefaultParameterValues -Scope Global).Value. 
 
 ### The `$CallerInvocation` story
 
