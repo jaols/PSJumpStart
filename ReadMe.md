@@ -34,7 +34,7 @@ The PowerShell PSJumpStart module uses the built-in features in PowerShell to cr
 
 PSJumpstart uses `$PSDefaultParameterValues` to set local default parameters by using `.json` or `.dfp` files. These are read in a preset order so you may have different defaults for different scenarios.
 
-The package contains a `Functions` folder and an empty customizable `LocalLib` folder for local usage. One of the core functions is the `Msg`-function for showing/logging information. It can be pre-configured using `.json` or `.dfp` files described below. Another noteworthy function is the `Get-ModuleHelp`-function for getting module information.
+The package contains a `Functions` folder and an empty customizable `LocalLib` folder for local usage. One of the core functions is the `Msg`-function for showing/logging information. It can be pre-configured using `.json` or `.dfp` files described below. Another noteworthy function is the `Get-ModuleHelp`-function for getting module information. Try it on any loded module.
 
 A set of template files is provided to jump start script creation. The templates comes in two main flavors, PSJumpStart and Basic. The basic templates does not load the module and may act as stand alone scripts while the PSJumpStart templates is using the included module. All templates are  `Get-Help` enabled. The `Template` folder also holds the `ScriptSigner.ps1` file that will sign your files with an existing code signing certificate (or create a new one).
 
@@ -108,30 +108,30 @@ The `json` or `dfp` files may also be used to setup the logging environment by s
 
 This module comes with a `.cmd` file used for calling its corresponding PowerShell. The `runCleanupEmptyGroups.cmd` will launch the `CleanupEmptyGroups.ps1` PowerShell script with any provided arguments. The default behaviour of this template is to catch any output from the PowerShell and dump it to a log file in a `logs` sub folder. If any unhandled exceptions occur they will be put in a separate `ERR_` log file.
 The primary use for this is in the Task Scheduler. If you launch a PowerShell script directly from Task Scheduler you will not be able to get the exception data written by the PowerShell script. The `.cmd` file will trap and log the information.
-The recomendation for Task Scheduled scripts is using a `.dfp` named after the service account running the job. Then you may turn off any other logging method for `.ps1` files and let the `.cmd` file handle logging to file.
+The recomendation for Task Scheduled scripts is using a `.json` or `.dfp` named after the service account running the job. Then you may turn off any other logging method for `.ps1` files and let the `.cmd` file handle logging to file.
 
 ## How to debug
 
-The problem; If you are calling a function in a loaded module and want to see the results from `Write-Verbose` you need to add `-Verbose:$VerbosePrefererence` in the arguments for the call. By using  `dfp` files you may activate debug mode for whatever part you need.
+The problem; If you are calling a function in a loaded module and want to see the results from `Write-Verbose` you need to add `-Verbose:$VerbosePrefererence` in the arguments for the call. By using `json` or `dfp` files you may activate debug mode for whatever part you need.
 Please note that the global variable `$PSDefaultParameterValues` is lost in nested `psm1` function calls. So if you call a sub-function from a `psm1` function you need to retreive the content of `$PSDefaultParameterValues` into the calling `psm1` function using `$PSDefaultParameterValues = (Get-Variable -Name PSDefaultParameterValues -Scope Global).Value`
 
 ### Global debugging
 
-Edit the PSJumpStart module `dfp`file to activate debug mode for ALL scripts, modules and function calls: set `*:Verbose=$true`in the file. The next execution session will activate verbose mode across the board. This can be done by using a specific user `dfp`file so only that user will get verbose feedback.
+Edit the PSJumpStart module `json` and `dfp`files to activate debug mode for ALL scripts, modules and function calls: set `"*:Verbose":true`and `*:Verbose=$true`in the files. The next execution session will activate verbose mode across the board. This can be done by using a specific user `json` and/or `dfp`file so only that user will get verbose feedback.
 
 ### Specific script debugging
 
 To debug your script as well as get `Write-Verbose`printouts from ALL used modules and functions;
 
-1. Create a `dfp`file with the same name as your script.
-2. Put `*:Verbose=$true`in it.
+1. Create a `json` or `dfp`file (depending on what the script uses) with the same name as your script.
+2. Put `"*:Verbose":true` or `*:Verbose=$true`in it.
 3. Run the script to load `Verbose` mode in current session.
 
-Using the argument `-Verbose` at the command prompt will override the `dfp`file settings introducing the limits mentioned before, but may be needed at some scenarios.
+Using the argument `-Verbose` when starting the script will set verbose mode for hte script itself, not only the called functions. Add `"Verbose":true` or `Verbose=$true` to your file if you don't want to user the argument switch.
 
 ### Function debugging
 
-If you only need to get verbose printout from a specific function you can add `Function-Name:Verbose=$true` in any `dfp` file.
+If you only need to get verbose printout from a specific function you can add `"Function-Name:Verbose":true` in any `json` file, or `Function-Name:Verbose=$true` in any `dfp` file.
 
 ## The templates
 
