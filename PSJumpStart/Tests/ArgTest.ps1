@@ -49,7 +49,7 @@ get-module PSJumpStart | Remove-Module;
 
 #PATH: C:\Users\%userID%\Documents\WindowsPowerShell\Modules\PSJumpStart??
 #Import-Module "PSJumpStart" -Force
-$scriptPath = Split-Path -Parent $MyInvocation.MyCommand.Definition
+
 Import-Module PSJumpStart -Force
 
 #Get Local variable default values from external DFP-files

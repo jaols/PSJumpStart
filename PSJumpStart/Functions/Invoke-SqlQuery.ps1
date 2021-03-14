@@ -17,7 +17,7 @@ function Invoke-SqlQuery {
         .NOTES
             For a full feature SQL Admin module: https://dbatools.io/
         #>
-        [CmdletBinding(SupportsShouldProcess = $True, DefaultParameterSetName='NamedConnection')]
+        [CmdletBinding(DefaultParameterSetName='NamedConnection')]
         Param(
         [parameter(Position=0,mandatory=$true)]
         [string]$Query,       

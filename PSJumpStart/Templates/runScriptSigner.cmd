@@ -11,12 +11,12 @@ chcp 1252 > nul
 Set MyName=%~n0
 
 REM For date format yyyy-MM:
-Set ErrLog="%~dp0logs\ERR_%MyName:~3%_%DATE:~0,7%.log"
-Set StdLog="%~dp0logs\%MyName:~3%_%DATE:~0,7%.log"
+Set ErrLog="%~dp0\ERR_%MyName:~3%_%DATE:~0,7%.log"
+Set StdLog="%~dp0\%MyName:~3%_%DATE:~0,7%.log"
 
 REM For others
-Set ErrLog="%~dp0logs\ERR_%MyName:~3%_%DATE:~0,7%.log"
-Set StdLog="%~dp0logs\%MyName:~3%_%DATE:~0,7%.log"
+Set ErrLog="%~dp0\ERR_%MyName:~3%_%DATE:~0,7%.log"
+Set StdLog="%~dp0\%MyName:~3%_%DATE:~0,7%.log"
 
 REM This line will catch output to same file and folder
 REM PowerShell -File "%~dp0%MyName:~3%.ps1" %* >> %StdLog% 2>&1

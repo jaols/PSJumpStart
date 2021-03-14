@@ -14,8 +14,8 @@ REM Get current time in variables (%Year%,%Month%,%Day%...and more)
 for /f %%x in ('wmic path win32_localtime get /format:list ^| findstr "="') do set %%x
 
 REM Set log file names
-Set ErrLog="%~dp0logs\ERR_%MyName:~3%_%Year%-%Month%-%Day%.log"
-Set StdLog="%~dp0logs\%MyName:~3%_%Year%-%Month%.log"
+Set ErrLog="%~dp0\ERR_%MyName:~3%_%Year%-%Month%-%Day%.log"
+Set StdLog="%~dp0\%MyName:~3%_%Year%-%Month%.log"
 
 REM This line will catch output to same file and folder
 REM PowerShell -File "%~dp0%MyName:~3%.ps1" %* >> %StdLog% 2>&1

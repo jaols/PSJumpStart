@@ -1,75 +1,82 @@
-#Load standard arguments from file (even evaluate code)
-#Run code from PSM-file?
-#scriptfilename -> domain name/server name -> global settings
+ <#
+.Synopsis
+    Template 
+.DESCRIPTION
+    This template will load $PSDefaultParameterValues and the PSJumpStart module
+    and has support for Write-Verbose, -WhatIf and whatnot.
+.PARAMETER arg1
+   	First mandatory string argument.
+.PARAMETER arg2
+   	Second optional string argument.
+.PARAMETER flag
+	Switch parameter check with if ($flag:IsPresent) {}
+.Notes
+    Author: 
+    Changes:
+#>
 [CmdletBinding(SupportsShouldProcess = $True)]
-param (      
-    $pstring,   
-   [string]$one,   
-   [int64]$isint,
-   [string[]]$two,
-   #[ValidateScript({ $_.GetType().FullName -eq 'System.Management.Automation.PSScriptCmdlet' })]
-   $sessionParam
+param (
+    [Parameter(Mandatory = $true,
+               ValueFromPipelineByPropertyName=$true)]
+    [string]$arg1,
+    [string]$arg2,
+    [switch]$flag
 )
 
-#region Init
+#region local functions 
 
 #Load default arguemts for this script.
 #Command prompt arguments will override file settings
 function GetLocalDefaultsFromDfpFiles($CallerInvocation) {        
     #Load script default settings
     foreach($settingsFile in (Get-SettingsFiles $CallerInvocation ".dfp")) {
-        Write-Verbose "File: [$settingsFile]"
-        if (Test-Path $settingsFile) {        
+        Write-Verbose "GetLocalDefaultsFromDfpFiles: [$settingsFile]"
+        if (Test-Path $settingsFile) {
             $settings = Get-Content $settingsFile
             #Enumerate settingsfile rows
             foreach($row in $settings) {
                 #Remarked lines are not processed
                 if (($row -match "=") -and ($row.Trim().SubString(0,1) -ne "#")) {
-                    $key = $row.Split('=')[0]                            
+                    $key = $row.Split('=')[0]
                     $var = Get-Variable $key -ErrorAction SilentlyContinue
                     if ($var -and !($var.Value))
                     {
-                        try {                
-                            Write-Host "Var: $key" 
+                        try {
                             $var.Value = Invoke-Expression $row.SubString($key.Length+1)
+                            Write-Verbose "GetLocalDefaultsFromDfpFiles: $key = $($var.Value)" 
                         } Catch {
                             $ex = $PSItem
                             $ex.ErrorDetails = "Err adding $key from $settingsFile. " + $PSItem.Exception.Message
                             throw $ex
                         }
                     }
-                   #Write-Host "$($var.Value)"
                 }
             }
         }
     }
 }
+#endregion
 
-get-module PSJumpStart | Remove-Module;
-
-#PATH: C:\Users\%userID%\Documents\WindowsPowerShell\Modules\PSJumpStart??
-#Import-Module "PSJumpStart" -Force
-
-Import-Module PSJumpStart -Force
+#region Init
+$scriptPath = Split-Path -Parent $MyInvocation.MyCommand.Definition
+if (-not (Get-Module PSJumpStart)) {
+    Import-Module PSJumpStart -Force
+}
 
 #Get Local variable default values from external DFP-files
 GetLocalDefaultsFromDfpFiles($MyInvocation)
 
 #Get global deafult settings when calling modules
-$PSDefaultParameterValues = Get-GlobalDefaultsFromDfpFiles($MyInvocation)
+$PSDefaultParameterValues = Get-GlobalDefaultsFromDfpFiles $MyInvocation -Verbose:$VerbosePreference
 
 #endregion
 
 Msg "Start Execution"
 
-Write-Verbose "Value for One is [$one]"
+Write-Verbose "Script is in $scriptPath"
 
-$TheHash = @{}
-#Test nesting verbose messages
-AddToHash $TheHash "test" "First value to have."
-AddToHash $TheHash "test" " Add this as well"
-
-#Simple nested test
-verboseTest "This will NOT show if parameter -Verbose is used for the script. BUT it will if Verbose=$true is used in a dfp file."
+if ($pscmdlet.ShouldProcess("ActiveCode", "Run Code")) {
+    #Put your commands/code here...
+}
 
 Msg "End Execution"

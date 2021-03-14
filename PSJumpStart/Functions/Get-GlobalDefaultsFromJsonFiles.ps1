@@ -1,4 +1,4 @@
-function Get-GlobalDefaultsFromDfpFiles {
+function Get-GlobalDefaultsFromJsonFiles {
     <#
         .Synopsis
            Get global defaults to use with $PSDefaultParameterValues
@@ -9,11 +9,7 @@ function Get-GlobalDefaultsFromDfpFiles {
             - User settings from a file named as UserLogonID in caller location or current location(?) is loaded as Prio 1 
             - LogonDomain (or machine name) file in Module location is Prio 2
             - Module name(s) settings is last in order.
-        
-            Syntax for dfp-file entries is:
-              argumentName="This is a default input parameter value for a script"                
-              functionName:ParameterName=ValueOrCode 
-    
+                        
         .PARAMETER CallerInvocation
            The invocation object from the caller.
     
@@ -31,37 +27,38 @@ function Get-GlobalDefaultsFromDfpFiles {
     
         $result = New-Object System.Management.Automation.DefaultParameterDictionary
         
-        foreach($settingsFile in (Get-SettingsFiles $CallerInvocation ".dfp")) {                
+        foreach($settingsFile in (Get-SettingsFiles $CallerInvocation ".json")) {                
             if (Test-Path "$settingsFile") {            
-                Write-Verbose "Get-GlobalDefaultsFromDfpFiles:[$settingsFile]"
-                $settings = Get-Content $settingsFile
-                foreach($row in $settings) {                
-                    #Row Syntax FunctionName:Variable=Value/Code
-                    if (($row -match ":") -and ($row -match "=") -and ($row.Trim().SubString(0,1) -ne "#") -and $row.IndexOf('=') -gt $row.IndexOf(':')) {
-                        $key = $row.Split('=')[0]               
+                Write-Verbose "Get-GlobalDefaultValues:[$settingsFile]"
+
+                $DefaultParamters = Get-Content -Path $settingsFile -Encoding UTF8 | ConvertFrom-Json
+
+                ForEach($prop in $DefaultParamters | Get-Member -MemberType NoteProperty) {
+
+                    if (($prop.Name).IndexOf(':') -ge 0) {                        
+                        $key=$prop.Name
                         $Variable = $key.Split(':')[1]
-                        
-                        #Prevent overriding arguments to caller
+
                         if (!$result.ContainsKey($key) -and -not $CallerInvocation.BoundParameters[$Variable].IsPresent) {
                             try {
-                                #Add value from XML (OR result from PS-code execution)
-                                $result.Add($key,(Invoke-Expression $row.SubString($key.Length+1)))
-                                Write-Verbose "Get-GlobalDefaultsFromDfpFiles:$key = $($row.SubString($key.Length+1))" 
+                                $value = $DefaultParamters.($prop.Name)
+                                if ($value.GetType().Name -eq "String" -and $value.SubString(0,1) -eq '(') {
+                                    $result.Add($key,(Invoke-Expression -Command $value))
+                                } else {
+                                    $result.Add($key,$value)
+                                }
                             } catch {
                                 $ex = $PSItem
                                 $ex.ErrorDetails = "Err adding $key from $settingsFile. " + $PSItem.Exception.Message
                                 throw $ex
-                            }                    
-                        } else {
-                            Write-Verbose "Get-GlobalDefaultsFromDfpFiles:$key already set"
+                            }
                         }
-                    }
+                    }    
                 }
             } else {
-                Write-Verbose "Get-GlobalDefaultsFromDfpFiles:[$settingsFile] missing"
+                Write-Verbose "Get-GlobalDefaultValues:[$settingsFile] missing"
             }
         }
-    
         #Return Parameter Dictionary 
         [System.Management.Automation.DefaultParameterDictionary]$result
 }

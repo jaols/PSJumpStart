@@ -1,0 +1,10 @@
+{
+    "Msg:useFileLog":  false,
+    "*:Confirm":  false,
+    "Msg:useEventLog":  false,
+    "ExportDataTableToFile:CSVseparator":  ";",
+    "Format-Table:AutoSize":  true,
+    "Msg:logFilePath":  "($ExecutionContext.SessionState.Path.CurrentLocation.Path)",
+    "Get-Help:ShowWindow":  true,
+    "Msg:EventLogName":  "PSJumpStart"
+}

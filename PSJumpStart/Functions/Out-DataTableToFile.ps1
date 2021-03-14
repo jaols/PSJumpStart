@@ -61,6 +61,4 @@ function Out-DataTableToFile {
     
     End {
     }
-    }
-    
-    
+}

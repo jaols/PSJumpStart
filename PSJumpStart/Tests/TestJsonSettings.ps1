@@ -1,32 +1,12 @@
- <#
-.Synopsis
-    Template 
-.DESCRIPTION
-    This template will load $PSDefaultParameterValues and the PSJumpStart module
-    and has support for Write-Verbose, -WhatIf and whatnot.
-.PARAMETER arg1
-   	First mandatory string argument.
-.PARAMETER arg2
-   	Second optional string argument.
-.PARAMETER flag
-	Switch parameter check with if ($flag:IsPresent) {}
-.Notes
-    Author: 
-    Changes:
-#>
-[CmdletBinding(SupportsShouldProcess = $True)]
-param (
-    [Parameter(Mandatory = $true,
-               ValueFromPipelineByPropertyName=$true)]
-    [string]$arg1,
-    [string]$arg2,
-    [switch]$flag
+[CmdletBinding()]
+param(
+    $Arg1=(Get-Process -Name "PowerShell"),
+    $Arg2,
+    $Arg3
 )
 
-#region local functions 
-
-#Load default arguemts for this script.
-#Command prompt arguments will override file settings
+#region Init
+#region local functions
 function Get-LocalDefaultVariables {
     [CmdletBinding(SupportsShouldProcess = $False)]
     param(
@@ -83,26 +63,18 @@ function Get-LocalDefaultVariables {
 }
 #endregion
 
-#region Init
-$scriptPath = Split-Path -Parent $MyInvocation.MyCommand.Definition
-if (-not (Get-Module PSJumpStart)) {
-    Import-Module PSJumpStart -Force -MinimumVersion 1.2.0
-}
+Import-Module PSJumpStart -Force -MinimumVersion 1.2.0
 
-#Get Local variable default values from external DFP-files
-Get-LocalDefaultVariables($MyInvocation)
-
-#Get global deafult settings when calling modules
-$PSDefaultParameterValues = Get-GlobalDefaultsFromJsonFiles $MyInvocation -Verbose:$VerbosePreference
+#Retreive variables for this script (overwrite input arguments with -overWriteExisting).
+Get-LocalDefaultVariables -CallerInvocation $MyInvocation -Verbose -defineNew
+#Get default paramters when calling functions (for example std-adserver)
+$PSDefaultParameterValues = Get-GlobalDefaultsFromJsonFiles $MyInvocation 
 
 #endregion
 
 Msg "Start Execution"
+$Arg1
 
-Write-Verbose "Script is in $scriptPath"
-
-if ($pscmdlet.ShouldProcess("ActiveCode", "Run Code")) {
-    #Put your commands/code here...
-}
+#Get-Variable | ConvertTo-Json | Msg
 
 Msg "End Execution"

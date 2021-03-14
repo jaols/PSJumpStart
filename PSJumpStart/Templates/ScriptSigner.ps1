@@ -27,8 +27,6 @@ param (
 
 #region Init
 
-$scriptPath = Split-Path -Parent $MyInvocation.MyCommand.Definition
-
 if (-NOT ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole(`
     [Security.Principal.WindowsBuiltInRole] "Administrator"))
 {
@@ -69,7 +67,7 @@ param()
 Write-Output "Start Execution"
 
 Write-Verbose "Enumerate Cert:\LocalMachine\Root"
-Get-ChildItem -Path Cert:\LocalMachine\Root -CodeSigningCert | ForEach {       
+Get-ChildItem -Path Cert:\LocalMachine\Root -CodeSigningCert | ForEach-Object {       
     if ($_.Verify()) {
         Write-Verbose "Found existing certificate Cert:\LocalMachine\Root\$($_.Thumbprint)"
         $cert = $_        
@@ -88,7 +86,7 @@ if ($cert -eq $null) {
     }
 }
 
-Get-ChildItem -Path $Path -Filter "*$FileType" -Recurse:$Recurse.IsPresent | ForEach {    
+Get-ChildItem -Path $Path -Filter "*$FileType" -Recurse:$Recurse.IsPresent | ForEach-Object {    
     if ($pscmdlet.ShouldProcess($_.FullName, "Set-AuthenticodeSignature")) {
         $result = Set-AuthenticodeSignature $_.FullName -Certificate $cert
         Write-Output "$($result.Status);$($_.FullName)"

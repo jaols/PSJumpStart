@@ -38,9 +38,9 @@ function Msg {
     
            Writes message to console (Write-Host) and to the standard log file name.
         #>
-    [CmdletBinding(SupportsShouldProcess = $True)]
+    [CmdletBinding()]
     Param(
-        [parameter(Position = 0, mandatory = $true)]
+        [parameter(Position = 0, mandatory = $true, ValueFromPipeline=$true)]
         $Message,
         [parameter(Position = 1, mandatory = $false)]
         [string]$Type = "INFORMATION",        
