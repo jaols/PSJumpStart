@@ -75,6 +75,9 @@ $PSDefaultParameterValues = Get-GlobalDefaultsFromJsonFiles $MyInvocation
 Msg "Start Execution"
 $Arg1
 
+#Retreived from script json
+$PSpids
+
 #Get-Variable | ConvertTo-Json | Msg
 
 Msg "End Execution"

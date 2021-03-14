@@ -1,0 +1,3 @@
+{
+    "PSpids":  "(Get-Process -Name \"PowerShell\" | Select-Object -ExpandProperty Id)"
+}
