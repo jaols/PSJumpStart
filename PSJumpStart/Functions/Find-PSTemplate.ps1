@@ -11,13 +11,13 @@ function Find-PSTemplate {
         Param(     
             [string]$Name
         )
-        
-        Write-Verbose "Find templates in $PSScriptRoot\Templates"
+        $TemplateFolder="$PSScriptRoot\..\Templates"
+        Write-Verbose "Find templates in $TemplateFolder"
     
         if ([string]::IsNullOrEmpty($Name)) {
-            $list = Get-ChildItem "$PSScriptRoot\Templates"
+            $list = Get-ChildItem "$TemplateFolder"
         } else {
-            $list = Get-ChildItem "$PSScriptRoot\Templates" -Filter "$Name"
+            $list = Get-ChildItem "$TemplateFolder" -Filter "$Name"
         }
     
         ForEach($template in $list) {

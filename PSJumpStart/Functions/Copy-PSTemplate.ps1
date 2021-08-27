@@ -14,11 +14,12 @@ function Copy-PSTemplate {
           [string]$Name,
           [string]$Destination
       )
-      Write-Verbose "Copy template(s) from $PSScriptRoot\Templates"
+      $TemplateFolder="$PSScriptRoot\..\Templates"
+      Write-Verbose "Copy template(s) from $TemplateFolder"
   
       if ([string]::IsNullOrEmpty($Name)) {
-          Get-ChildItem "$PSScriptRoot\Templates" | Copy-Item -Destination $Destination
+          Get-ChildItem "$TemplateFolder" | Copy-Item -Destination $Destination
       } else {
-          Get-ChildItem "$PSScriptRoot\Templates" -Filter "$Name" | Copy-Item -Destination $Destination
+          Get-ChildItem "$TemplateFolder" -Filter "$Name" | Copy-Item -Destination $Destination
       }
   }

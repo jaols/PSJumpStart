@@ -37,7 +37,7 @@ function GetLocalDefaultsFromDfpFiles($CallerInvocation) {
 
 #Load the module
 get-module PSJumpStart | Remove-Module;
-Import-Module PSJumpStart
+Import-Module $PSScriptRoot\..\PSJumpStart
 
 #Get Local variable default values from external DFP-files
 GetLocalDefaultsFromDfpFiles($MyInvocation)
