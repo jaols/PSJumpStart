@@ -32,13 +32,9 @@ The PowerShell PSJumpStart module uses the built-in features in PowerShell to cr
 
 ## Features and content
 
-One of the most usefull features in PSJumpstart is the use of setting files. The files will populate PowerShell variables with default values, both script local variables and default values when calling functions. The solution uses the PowerShell feature `$PSDefaultParameterValues` to set default parameters. The setting files are of type `.json` or `.dfp`. These are read in a preset order so you may have different defaults for different scenarios.
+PSJumpstart uses `$PSDefaultParameterValues` to set local default parameters by using `.json` or `.dfp` files. These are read in a preset order so you may have different defaults for different scenarios.
 
-The package contains a `Functions` folder and an empty customizable `LocalLib` folder for local usage. Functions in `LocalLib` will be used over any existing function in the `Functions` folder. Any new function in `LocalLib` will be loaded.  
-
-Another core feature is the `Msg`-function for showing/logging information. It can be pre-configured using `.json` or `.dfp` files as described below. 
-
-The `Get-ModuleHelp`-function may be used for getting module information from any loaded module. Try it!
+The package contains a `Functions` folder and an empty customizable `LocalLib` folder for local usage. One of the core functions is the `Msg`-function for showing/logging information. It can be pre-configured using `.json` or `.dfp` files described below. Another noteworthy function is the `Get-ModuleHelp`-function for getting module information. Try it on any loded module.
 
 A set of template files is provided to jump start script creation. The templates comes in two main flavors, PSJumpStart and Basic. The basic templates does not load the module and may act as stand alone scripts while the PSJumpStart templates is using the included module. All templates are  `Get-Help` enabled. The `Template` folder also holds the `ScriptSigner.ps1` file that will sign your files with an existing code signing certificate (or create a new one).
 
@@ -47,10 +43,6 @@ A template `CMD` file is also provided for calling PowerShell scripts with `StdO
 The `Tests` folder contains some fully featured test/sample scripts are included for reference.
 
 One sample `ps1xml` file is included for extending the `HashTable` object type with methods for `Replace` and `AppendValue`.
-
-There is a small script signing feature included that is not depending on PSJumpStart. It will find/create a certificate and sign PS1-files.
-
-The function `Get-AccessCredential` will use cached credential file or create new ones if needed.
 
 ## Why?
 
@@ -68,7 +60,7 @@ Because we want to choose the depth of the PowerShell rabbit hole. Entry level t
 
 ## Practical usage of setting files
 
-Have a look in the `PSJumpStart.dfp` or `PSJumpStart.json` file (in the module `Functions` folder) using a text editor. Those are the least significant default settings. Use them to set your preferred global function call configurations (see `$PSDefaultParameterValues` for details) as well as local variable population.
+Have a look in the `PSJumpStart.dfp` or `PSJumpStart.json` file (in the module `Functions` folder) using a text editor. Those are the least significant default settings. Use them to set your preferred configurations (see `$PSDefaultParameterValues` for details).
 
 ### Using `dfp` files
 
@@ -82,8 +74,6 @@ To use a `dfp` file as a repository for standard input argument values to a `.ps
 
 So if you are using a site name argument in several scripts  ,`[string]$SiteName` , you may create a logon domain named `dfp`file with content `SiteName="www.whatever.com"`
 
-Call the `Get-GlobalDefaultsFromDfpFiles` function in your script to get content for `$PSDefaultParameterValues`. Insert the local function `Get-GlobalDefaultsFromDfpFiles` to populate standard arguments loading. Or use the template file `PSJumpStartStdTemplateWithArgumentsDfp.ps1`.
-
 ### Using `json` files
 
 The `.json` flawor works the same waay as the `.dfp` files. The syntax for setting default values for standard functions looks like this
@@ -95,8 +85,6 @@ To populate standard input argument values to a `.ps1` you remove the function n
 `"Argument-Name":"value/code"`
 
 So if you want `$PSpids` to contain currently running PowerShell sessions, you may use `"PSpids":  "(Get-Process -Name \"PowerShell\" | Select-Object -ExpandProperty Id)"` in a `json`file.
-
-Call the `Get-GlobalDefaultsFromJsonFiles` function in your script to get content for `$PSDefaultParameterValues`. Or use the template `PSJumpStartStdTemplateWithArguments.ps1` to get it all.
 
 ### Arguments load order
 
@@ -114,7 +102,7 @@ Use the `-verbose` for any PSJumpStart template script to see the order of loadi
 
 ### The art of logging
 
-The `json` or `dfp` files may also be used to setup the logging environment by setting default variables for the `Msg` function. It may write output to log files, event log or output to console only. Please remember to run any PowerShell as Adminstrator the first time to create any custom log name in the event log. The use of the settings files will enable you to set different event log names, but use this carefully as any script registered for a log name cannot write to another event log name without removing the source using `Remove-Eventlog`.
+The `json` or `dfp` files may also be used to setup the logging environment by setting default variables for the `Msg`function. It may write output to log files, event log or output to console only. Please remember to run any PowerShell as Adminstrator the first time to create any custom log name in the event log. The use of the settings files will enable you to set different event log names, but use this carefully as any script registered for a log name cannot write to another event log name without removing the source using `Remove-Eventlog`.
 
 ## The Task Scheduler problem
 
@@ -129,7 +117,7 @@ Please note that the global variable `$PSDefaultParameterValues` is lost in nest
 
 ### Global debugging
 
-Edit the PSJumpStart module `json` and `dfp`files to activate debug mode for ALL scripts, modules and function calls: set `"*:Verbose":true`and `*:Verbose=$true`in the files. The next execution session will activate verbose mode across the board. This can be done by using a specific user `json` and/or `dfp` file so only that user will get verbose feedback.
+Edit the PSJumpStart module `json` and `dfp`files to activate debug mode for ALL scripts, modules and function calls: set `"*:Verbose":true`and `*:Verbose=$true`in the files. The next execution session will activate verbose mode across the board. This can be done by using a specific user `json` and/or `dfp`file so only that user will get verbose feedback.
 
 ### Specific script debugging
 
