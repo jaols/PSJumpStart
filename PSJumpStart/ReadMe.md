@@ -32,9 +32,13 @@ The PowerShell PSJumpStart module uses the built-in features in PowerShell to cr
 
 ## Features and content
 
-PSJumpstart uses `$PSDefaultParameterValues` to set local default parameters by using `.json` or `.dfp` files. These are read in a preset order so you may have different defaults for different scenarios.
+One of the most useful features is the setting files solution. You can use either `.json` or `.dfp` files to populate variables and/or the standard PowerShell feature `$PSDefaultParameterValues`. The files are read in a preset order so you may have different defaults for different scenarios.
 
-The package contains a `Functions` folder and an empty customizable `LocalLib` folder for local usage. One of the core functions is the `Msg`-function for showing/logging information. It can be pre-configured using `.json` or `.dfp` files described below. Another noteworthy function is the `Get-ModuleHelp`-function for getting module information. Try it on any loded module.
+The package contains a `Functions` folder and an empty customizable `LocalLib` folder for local usage. Functions in the local folder will override any existing functions, so you can copy a function and improve it locally. New functions will be loaded when calling `Import-Module`.
+
+The `Msg`-function provides a generic handling of showing/logging information. It can be pre-configured using `.json` or `.dfp` files as described below. 
+
+Another noteworthy function is the `Get-ModuleHelp`-function for getting module information. Try it with or without paramters.
 
 A set of template files is provided to jump start script creation. The templates comes in two main flavors, PSJumpStart and Basic. The basic templates does not load the module and may act as stand alone scripts while the PSJumpStart templates is using the included module. All templates are  `Get-Help` enabled. The `Template` folder also holds the `ScriptSigner.ps1` file that will sign your files with an existing code signing certificate (or create a new one).
 
@@ -43,6 +47,8 @@ A template `CMD` file is also provided for calling PowerShell scripts with `StdO
 The `Tests` folder contains some fully featured test/sample scripts are included for reference.
 
 One sample `ps1xml` file is included for extending the `HashTable` object type with methods for `Replace` and `AppendValue`.
+
+A script signing feature is included that is not dependent on the module.
 
 ## Why?
 
@@ -74,6 +80,8 @@ To use a `dfp` file as a repository for standard input argument values to a `.ps
 
 So if you are using a site name argument in several scripts  ,`[string]$SiteName` , you may create a logon domain named `dfp`file with content `SiteName="www.whatever.com"`
 
+Call the function `Get-GlobalDefaultsFromDfpFiles` to get content for `$PSDefaultParameterValues` and the local function `GetLocalDefaultsFromDfpFiles` to set local script variables. Or simply use the template file `PSJumpStartStdTemplateWithArgumentsDfp.ps1` as a starting point.
+
 ### Using `json` files
 
 The `.json` flawor works the same waay as the `.dfp` files. The syntax for setting default values for standard functions looks like this
@@ -85,6 +93,8 @@ To populate standard input argument values to a `.ps1` you remove the function n
 `"Argument-Name":"value/code"`
 
 So if you want `$PSpids` to contain currently running PowerShell sessions, you may use `"PSpids":  "(Get-Process -Name \"PowerShell\" | Select-Object -ExpandProperty Id)"` in a `json`file.
+
+Call the function `Get-GlobalDefaultsFromJsonFiles` to get content for `$PSDefaultParameterValues`. Copy the `GetLocalDefaultsFromFiles` function from the template file `PSJumpStartStdTemplateWithArguments.ps1`. Or use the template.
 
 ### Arguments load order
 
@@ -202,11 +212,6 @@ The folder `Tests` included in this package has some code samples for calling fu
 
 [A nice article on the practical use of CustomObjects in PowerShell](https://social.technet.microsoft.com/wiki/contents/articles/7804.powershell-creating-custom-objects.aspx)
 
-## Stolen with pride
-
-Some of the functions included has been found "out-there". The author name and/or a link to the source is provided to give credit where credit is due.
-
-There are some references in the `Get-Help`notes section for some of the basic functions to dive deeper into the rabbit hole. 
 
 ## Contribute
 
