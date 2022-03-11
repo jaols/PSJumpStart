@@ -34,7 +34,7 @@ The PowerShell PSJumpStart module uses the built-in features in PowerShell to cr
 
 One of the most useful features is the setting files solution. You can use either `.json` or `.dfp` files to populate variables and/or the standard PowerShell feature `$PSDefaultParameterValues`. The files are read in a preset order so you may have different defaults for different scenarios.
 
-The package contains a `Functions` folder and an empty customizable `LocalLib` folder for local usage. Functions in the local folder will override any existing functions, so you can copy a function and improve it locally. New functions will be loaded when calling `Import-Module`.
+The package contains a `Functions` folder and an empty customizable `LocalLib` folder for local usage. Functions in the local folder will override any existing functions, so you can copy a function and improve it locally. The `LocalLib` feature also extends to the current running scripts folder so you may have different functions in different script folders. All function files will be loaded when calling `Import-Module`.
 
 The `Msg`-function provides a generic handling of showing/logging information. It can be pre-configured using `.json` or `.dfp` files as described below. 
 
@@ -149,7 +149,7 @@ In the `Templates`folder (living in the module folder) is a set of templates. Us
 
 ## Locally customized functions
 
-During loading of functions the `PSJumpStart.psm1`file will load any `ps1` function files from the folder `LocalLib` in the modules folder. Customized functions will override any PSJumpStart functions. So you may add any local functions to enhance the module.
+During loading of functions the `PSJumpStart.psm1` file will load any `ps1` function files from the folder `LocalLib` in the modules folder as well as current script folder. Customized functions will override any PSJumpStart functions. So you may add any local functions to enhance the module. This can be usefull for having specific targeted functions. If you have a script folder with scripts handling Sharepoint you may want common functions for Sharepoint handling in the local `LocalLib` subfolder for use by all scripts in that folder.
 
 ## Script signing
 

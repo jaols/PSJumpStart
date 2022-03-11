@@ -5,7 +5,7 @@ Function Send-MailMessageUsingHtmlTemplate {
         .DESCRIPTION
             Replace content in provided template using input hashtable.        
         .PARAMETER MailTo
-            Receiver of the mail
+            Receiver(s) of the mail (;-separated list)
         .PARAMETER MailFrom
             Name of the sender
         .PARAMETER Subject
@@ -19,12 +19,13 @@ Function Send-MailMessageUsingHtmlTemplate {
         .PARAMETER SMTPserver
             The server to use for sending the mail. 
         .NOTES
-            TIP: Use a domain dfp-file to set default SMTP server name
-    
+            TIP: Use a domain json-file or dfp-file to set default SMTP server name
+            "Send-MailMessage*:SMTPserver": "smtp.contoso.com",
+            
             Send-MailMessage*:SMTPserver="smtp.contoso.com"
     
         #>
-            Param(
+        Param(
          [parameter(mandatory=$true)]
          [string]$MailTo,
          [string]$MailFrom,
@@ -55,6 +56,12 @@ Function Send-MailMessageUsingHtmlTemplate {
             }
 
             Write-Verbose "Send mail to [$MailTo] from [$MailFrom] using [$SMTPserver]"
+            
+            #Split multiple addresses
+            if ($MailTo.IndexOf(';') -gt 0) {
+                $MailTo=$MailTo.Split(';')
+            }
+
             if ($Attachments) {
                 Send-MailMessage -SmtpServer $SMTPserver -To $MailTo -From $MailFrom -Subject $Subject -Body $messageBody -BodyAsHtml -ErrorAction Stop -Encoding UTF8 -Attachments $Attachments
             } else {

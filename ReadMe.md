@@ -34,7 +34,7 @@ The PowerShell PSJumpStart module uses the built-in features in PowerShell to cr
 
 One of the most useful features is the setting files solution. You can use either `.json` or `.dfp` files to populate variables and/or the standard PowerShell feature `$PSDefaultParameterValues`. The files are read in a preset order so you may have different defaults for different scenarios.
 
-The package contains a `Functions` folder and an empty customizable `LocalLib` folder for local usage. Functions in the local folder will override any existing functions, so you can copy a function and improve it locally. New functions will be loaded when calling `Import-Module`.
+The package contains a `Functions` folder and an empty customizable `LocalLib` folder for local usage. Functions in the local folder will override any existing functions, so you can copy a function and improve it locally. The `LocalLib` feature also extends to the current running scripts folder so you may have different functions in different script folders. All function files will be loaded when calling `Import-Module`.
 
 The `Msg`-function provides a generic handling of showing/logging information. It can be pre-configured using `.json` or `.dfp` files as described below. 
 

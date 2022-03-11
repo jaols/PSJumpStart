@@ -1,7 +1,14 @@
 #Get PSJumpStart function files
 $FunctionLib = @(Get-ChildItem -Path $PSScriptRoot\Functions\*.ps1 -ErrorAction SilentlyContinue)
-#Get Local lib function files
-$LocalLib = @(Get-ChildItem -Path $PSScriptRoot\LocalLib\*.ps1 -ErrorAction SilentlyContinue)
+#Get Local module lib function files
+$LocalModuleLib = @(Get-ChildItem -Path $PSScriptRoot\LocalLib\*.ps1 -ErrorAction SilentlyContinue)
+#Get Local lib function files (script folder OR current folder)
+$LocalLibPath=$MyInvocation.PSScriptRoot
+if ([string]::IsNullOrEmpty($LocalLibPath)) {    
+    $LocalLibPath=$PWD.Path    
+} 
+$LocalLib = @(Get-ChildItem -Path $LocalLibPath\LocalLib\*.ps1 -ErrorAction SilentlyContinue)
+
 #$functionNames = @()
 
 #Import PSJumpstart functions
@@ -14,10 +21,20 @@ foreach($Import in $FunctionLib) {
         Write-Error -Message "Failed to import function $($Import.FullName): $_"
     }
 }
-
 #Import local lib functions (override any PSJumpstart modules)
-foreach($Import in $LocalLib) {
+foreach($Import in $LocalModuleLib) {
     try {
+        . $Import.FullName
+        #$functionNames += ($Import.Name).Replace(".ps1","")
+    }
+    catch {
+        Write-Error -Message "Failed to import function $($Import.FullName): $_"
+    }
+}
+
+#Import local lib functions (override any functions)
+foreach($Import in $LocalLib) {
+    try {        
         . $Import.FullName
         #$functionNames += ($Import.Name).Replace(".ps1","")
     }
