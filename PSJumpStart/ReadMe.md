@@ -217,7 +217,7 @@ The folder `Tests` included in this package has some code samples for calling fu
 
 ## Contribute
 
-Please feel free to add an issue suggest for improvements or contribute with functions. As the end line from the movie `The Matrix` puts it:
+Please feel free to add an issue and suggest improvements or contribute with functions. As the end line from the movie `The Matrix` puts it:
 
 "A world where anything is possible. Where we go from there is a choice I leave to you."
 
