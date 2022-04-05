@@ -28,23 +28,23 @@
 
 ## Introduction
 
-The PowerShell PSJumpStart module uses the built-in features in PowerShell to create an environment for the Power Administrator. It is a set of files to jump start PowerShell script creation as well as some ready to use functions. The goal is to provide some simple start-up functions. Search the [PowerShell Gallery](https://www.powershellgallery.com/) or the internet if a more potent function is needed. 
+The PowerShell PSJumpStart module uses the built-in features in PowerShell to create an environment for the Power Administrator. The environment is highly customizable for different usages. A set of files is provided to jump start PowerShell script creation as well as some ready to use functions. The goal is to provide some simple start-up functions. Search the [PowerShell Gallery](https://www.powershellgallery.com/) or the internet to add functionallity or if a more potent function is needed for an existing one.
 
 ## Features and content
 
 One of the most useful features is the setting files solution. You can use either `.json` or `.dfp` files to populate variables and/or the standard PowerShell feature `$PSDefaultParameterValues`. The files are read in a preset order so you may have different defaults for different scenarios.
 
-The package contains a `Functions` folder and an empty customizable `LocalLib` folder for local usage. Functions in the local folder will override any existing functions, so you can copy a function and improve it locally. The `LocalLib` feature also extends to the current running scripts folder so you may have different functions in different script folders. All function files will be loaded when calling `Import-Module`.
+The package contains a `Functions` folder and an empty customizable `LocalLib` folder for local usage found in the module folder. Functions in the local folder will override any existing functions in the `Functions` folder, so you can copy a function and improve it for local usage. The `LocalLib` feature also extends to the current running scripts folder. So you can have the same function name in different versions at each script folders `LocalLib` location. The correct set of function files will be loaded by the `Import-Module` call.
 
 The `Msg`-function provides a generic handling of showing/logging information. It can be pre-configured using `.json` or `.dfp` files as described below. 
 
-Another noteworthy function is the `Get-ModuleHelp`-function for getting module information. Try it with or without paramters.
+Another noteworthy function is the `Get-ModuleHelp`-function for getting module information. Try it with or without arguments.
 
 A set of template files is provided to jump start script creation. The templates comes in two main flavors, PSJumpStart and Basic. The basic templates does not load the module and may act as stand alone scripts while the PSJumpStart templates is using the included module. All templates are  `Get-Help` enabled. The `Template` folder also holds the `ScriptSigner.ps1` file that will sign your files with an existing code signing certificate (or create a new one).
 
 A template `CMD` file is also provided for calling PowerShell scripts with `StdOut` and `StdErr` capturing.  The primary intended use is launching PS-scripts from Task Scheduler as unhandled errors cannot be traced otherwise. It is a generic template and may be used to launch any PowerShell script.
 
-The `Tests` folder contains some fully featured test/sample scripts are included for reference.
+The `Tests` folder in the module folder contains some fully featured test/sample scripts are included for reference.
 
 One sample `ps1xml` file is included for extending the `HashTable` object type with methods for `Replace` and `AppendValue`.
 
@@ -61,6 +61,8 @@ Because we want to be able to copy a script from one environment to another with
 Because we want to choose how output (messages, verbose and errors) are handled for each site and/or environment without rewriting the scripts. Log to windows eventlog, a log file or only to `StdOut`?
 
 Because we want to be able to set default parameters depending on user, domain or script but be able to override these default parameters by using script arguments. 
+
+Because we would like to have local PS functions to expand/replace the PSJumpStart base features without risking override by PSJumpStart updates.
 
 Because we want to choose the depth of the PowerShell rabbit hole. Entry level to deep-sea diving.
 
