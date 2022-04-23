@@ -23,7 +23,6 @@
     + [The `$CallerInvocation` story](#the---callerinvocation--story)
     + [`Hashtable` type add-on](#-hashtable--type-add-on)
     + [Notes](#notes)
-  * [Stolen with pride](#stolen-with-pride)
   * [Contribute](#contribute)
 
 ## Introduction
