@@ -3,11 +3,13 @@ function Get-HtmlAlternatingTable {
     .SYNOPSIS
         Get a one or two column alternating HTML table from input object. 
     .DESCRIPTION
-        The generated HTML table is a fixed style table with object member names in left column and values in the right column
+        The generated HTML table is a fixed style table with object member names in left column and values in the right column.
     .PARAMETER Header
         Set a header text for the table
     .PARAMETER InputData
         Data to process. This can be a Hashtable, PSCustomObject, String, String[] or Object[]
+    .NOTES
+        This table can be used as part of (inserted into) a mail message.
     #>
     [CmdletBinding()]
     param(        

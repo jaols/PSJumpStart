@@ -4,7 +4,8 @@ Param(
 
 #region local functions
 
-function Set-LocalCssStyle {
+
+function LocalCssStyle {
    [CmdletBinding()]
     param(         
         [String]$CssStyle,
@@ -114,13 +115,33 @@ Msg "Start Execution"
 $n=0
 $outFile = $env:TEMP + "\htmlTest"
 
-$htmlCode = get-process | ConvertTo-Html -Property Name,Path,Company | Set-LocalCssStyle -CssStyle "th {background-color: #5D7B9D;color: white;}
-tr:nth-child(even) {background: #D0D3D4}
-tr:nth-child(odd) {background: #FFF}
-tr:hover {background-color: #a6a6a6;}"
+$cssStyle = "<style>
+    h3 {background-color: #5D7B9D;color: white;}
+    th {background-color: #5D7B9D;color: white;}
+    tr:nth-child(even) {background: #D0D3D4}
+    tr:nth-child(odd) {background: #FFF}
+    tr:hover {background-color: #a6a6a6;}
+</style>"
 
+$stdHeader = "<h3>Process list</h3>"
+
+$htmlCode = get-process | ConvertTo-Html -Property Name,Path,Company -As List -Head $cssStyle -PreContent $stdHeader -Title "LIST OF PROCESSES"
 $tmp = ($outFile + $n + ".html")
 $htmlCode | Out-File -FilePath $tmp -Force
+
+Msg "Use std components to create a HTML table (with all trimmings): $tmp"
+Invoke-Expression $tmp
+
+$n++
+
+#THIS DOES NOT WORK AS WE GET A LIST OF [process] objects.
+#Get-Process | Get-HtmlAlternatingTable -Header "Processes"
+
+#We need to specify what we want (and we get a list of [PSCustomObject])
+$htmlCode = Get-Process | Select-Object Name,Path,Company | Get-HtmlAlternatingTable -Header "Process list"
+$tmp = ($outFile + $n + ".html")
+$htmlCode | Out-File -FilePath $tmp -Force
+Msg "Process list table PSJumpstart style: $tmp"
 Invoke-Expression $tmp
 
 $n++
@@ -130,19 +151,8 @@ $colours = @("Blue","White","Green")
 $htmlCode = Get-HtmlAlternatingTable -InputData $colours -Header "List of colors"
 $tmp = ($outFile + $n + ".html")
 $htmlCode | Out-File -FilePath $tmp -Force
-Invoke-Expression $tmp
 
-$n++
-
-
-#THIS DOES NOT WORK
-Get-Process | Get-HtmlAlternatingTable -Header "Processes"
-
-#We need to specify what we want
-$htmlCode = Get-Process | Select-Object Name,Path,Company | Get-HtmlAlternatingTable -Header "Processes"
-$tmp = ($outFile + $n + ".html")
-$htmlCode | Out-File -FilePath $tmp -Force
-
+Msg "Simple array of strings table: $tmp"
 Invoke-Expression $tmp
 
 $n++
@@ -157,13 +167,7 @@ $htmlCode = Get-HtmlAlternatingTable -InputData $UserData -Header "User data"
 $tmp = ($outFile + $n + ".html")
 $htmlCode | Out-File -FilePath $tmp -Force
 
+Msg "Hashtable sample: $tmp"
 Invoke-Expression $tmp
-
-
-
-
-
-
-
 
 Msg "End Execution"

@@ -59,13 +59,15 @@ Function Send-MailMessageUsingHtmlTemplate {
             
             #Split multiple addresses
             if ($MailTo.IndexOf(';') -gt 0) {
-                $MailTo=$MailTo.Split(';')
+                $SendTo=$MailTo.Split(';')                
+            } else {
+                $SendTo=$MailTo
             }
 
             if ($Attachments) {
-                Send-MailMessage -SmtpServer $SMTPserver -To $MailTo -From $MailFrom -Subject $Subject -Body $messageBody -BodyAsHtml -ErrorAction Stop -Encoding UTF8 -Attachments $Attachments
+                Send-MailMessage -SmtpServer $SMTPserver -To $SendTo -From $MailFrom -Subject $Subject -Body $messageBody -BodyAsHtml -ErrorAction Stop -Encoding UTF8 -Attachments $Attachments
             } else {
-                Send-MailMessage -SmtpServer $SMTPserver -To $MailTo -From $MailFrom -Subject $Subject -Body $messageBody -BodyAsHtml -ErrorAction Stop -Encoding UTF8
+                Send-MailMessage -SmtpServer $SMTPserver -To $SendTo -From $MailFrom -Subject $Subject -Body $messageBody -BodyAsHtml -ErrorAction Stop -Encoding UTF8
             }
            
         } else {
