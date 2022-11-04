@@ -43,7 +43,8 @@ function Get-HtmlAlternatingTable {
                 [void]$result.Append("<td>" + [System.Web.HttpUtility]::HtmlEncode($InputData) + "</td>")
                 [void]$result.Append("</tr>");
             }
-            "Hashtable"  {  
+            {$_ -eq "Hashtable" -or $_ -eq "OrderedDictionary" -or $_ -eq "Dictionary"}
+            {  
                 foreach ($Key in $InputData.Keys)
                 {                
                     [void]$result.Append("<tr style='" + $lineStyle[($i++ % 2)] + "'\>")

@@ -15,6 +15,7 @@ function Get-SettingsFiles {
         .PARAMETER extension
            File name suffix to use.
     #>
+    [CmdletBinding()]
     Param(
          [parameter(Position=0,mandatory=$true)]
          $CallerInvocation,
@@ -22,14 +23,23 @@ function Get-SettingsFiles {
          [string]$extension
     ) 
     
-        $globalLocation =  $PSScriptRoot        
+        $globalLocation =  $PSScriptRoot
+        Write-Verbose "Global location: $globalLocation"
+
         $callerLocation = Split-Path -parent $CallerInvocation.MyCommand.Definition
-    
+        if ([string]::IsNullOrEmpty($callerLocation)) {            
+            $callerLocation = $PWD.Path
+        }        
+        Write-Verbose "Caller location: $callerLocation"
+        
         [reflection.assembly]::LoadWithPartialName("System.Security.Principal.WindowsIdentity") |Out-Null
         $user = [System.Security.Principal.WindowsIdentity]::getCurrent()    
         $UserID = ($user.Name -split '\\')[1]
         $LogonContext = ($user.Name -split '\\')[0]
         
+        Write-Verbose "UserId: $UserId"
+        Write-Verbose "Context: $LogonContext"
+
         #Add local environment settingsfiles (user specific or domain/computer specific)
         #also script specific defaults (local vars??) 
         $settingFiles = @(        

@@ -22,12 +22,12 @@
     + [The `Msg` function](#the--msg--function)
     + [The `$CallerInvocation` story](#the---callerinvocation--story)
     + [`Hashtable` type add-on](#-hashtable--type-add-on)
-    + [Notes](#notes)
+    + [Notes/Tips](#notes-tips)
   * [Contribute](#contribute)
 
 ## Introduction
 
-The PowerShell PSJumpStart module uses the built-in features in PowerShell to create an environment for the Power Administrator. The environment is highly customizable for different usages. A set of files is provided to jump start PowerShell script creation as well as some ready to use functions. The goal is to provide some simple start-up functions. Search the [PowerShell Gallery](https://www.powershellgallery.com/) or the internet to add functionallity or if a more potent function is needed for an existing one.
+The PowerShell PSJumpStart module uses the built-in features in PowerShell to create an environment for the Power Administrator. The environment is highly customizable for different usages.A set of files is provided to jump start PowerShell script creation as well as some ready to use functions. The goal is to provide some simple start-up functions. Search the [PowerShell Gallery](https://www.powershellgallery.com/) or the internet to add functionallity or if a more potent function is needed than the included one.
 
 ## Features and content
 
@@ -47,23 +47,21 @@ The `Tests` folder in the module folder contains some fully featured test/sample
 
 One sample `ps1xml` file is included for extending the `HashTable` object type with methods for `Replace` and `AppendValue`.
 
-A script signing feature is included that is not dependent on the module.
+A script signing feature is included that is not dependent on the module. The script signing feature will use an existing certificate if found or create a new one at run-time.
 
 ## Why?
 
 Because we are system administrators that just want to get going with PowerShell using basic supporting functions for common use.
 
-Because we want a jump start for writing a script with `Get-Help` support.
+Because we want a jump start for writing a script with `Get-Help` support by using included templates.
 
-Because we want to be able to copy a script from one environment to another without the need to change them making code signing easier (or less of a hassle).
+Because we want to be able to copy a script from one environment to another without the need to change them making code signing easier (or less of a hassle). Default input arguments are read from settings files.
 
 Because we want to choose how output (messages, verbose and errors) are handled for each site and/or environment without rewriting the scripts. Log to windows eventlog, a log file or only to `StdOut`?
 
-Because we want to be able to set default parameters depending on user, domain or script but be able to override these default parameters by using script arguments. 
+Because we want to be able to set default parameters depending on user, domain or script but be able to override these default parameters by using the script arguments. 
 
 Because we would like to have local PS functions to expand/replace the PSJumpStart base features without risking override by PSJumpStart updates.
-
-Because we want to choose the depth of the PowerShell rabbit hole. Entry level to deep-sea diving.
 
 ## Practical usage of setting files
 
@@ -152,9 +150,11 @@ In the `Templates`folder (living in the module folder) is a set of templates. Us
 
 During loading of functions the `PSJumpStart.psm1`file will load any `ps1` function files from the folder `LocalLib` in the modules folder. Customized functions will override any PSJumpStart functions. So you may add any local functions to enhance the module.
 
+It is also possible to create a `LocalLib` folder in any location containing PSJumpStart enabled `ps1` files. This makes it possible to have a set of `ps1` files targeted for a specific purpose with their own set of local functions. These functions will of course override any existing functions in the module folders.
+
 ## Script signing
 
-There is a little stand alone feature in the `Templates`folder for script signing. It will search for a valid `CodeSigning`  capable certificate on the local computer. If not found a new self signed certificate will be created. The found/new certificate is then used to sign single scripts or all scripts in a folder. 
+There is a little stand alone feature in the `Templates` folder for script signing. It will search for a valid `CodeSigning` capable certificate on the local computer. If not found a new self signed certificate will be created. The found/new certificate is then used to sign single scripts or all scripts in a folder. 
 
 This feature is **not** dependent on the PSJumpStart module.
 
@@ -210,6 +210,8 @@ The PSJumpStart module will add two methods to the `Hashtable` variable type.  T
 ### Notes/Tips
 
 The folder `Tests` included in this package has some code samples for calling functions in the module. For example `SQLqueryTest.ps1` where the local function `dumpDBresult` explores the result from calling `Invoke-SqlQuery`. 
+
+The template folder also include the file `Set-PSJumpStartCommandPromtEnvironment.ps1`. This file will create variables according to the current set of `json` files with verbose output. This is very useful in some test and/or development scenarios.
 
 [A nice article on the practical use of CustomObjects in PowerShell](https://social.technet.microsoft.com/wiki/contents/articles/7804.powershell-creating-custom-objects.aspx)
 

@@ -60,11 +60,11 @@ Process {
             switch ($panelContent.Gettype().Name) {
                 "PSCustomObject" {                    
                     [void]$result.AppendLine((tGet-HtmlAccordion -inputData $panelContent -DataName $Key -panelCount $panelCount -Fragment))
-                    $panelCount++
+                    $panelCount=$result.Length
                 }
                 "Hashtable" {                    
                     [void]$result.AppendLine((tGet-HtmlAccordion -inputData $panelContent -DataName $Key -panelCount $panelCount -Fragment))
-                    $panelCount++
+                    $panelCount=$result.Length
                 }
                 Default {                    
                     [void]$result.Append([System.Web.HttpUtility]::HtmlEncode($panelContent))
@@ -185,20 +185,34 @@ $UserList = [PSCustomObject]@{
             )
         }
     )
+    Adresses = @{
+        London=@{
+            Street="Oxfordstreet 22"
+            Zip="122 22"
+        }
+        "New York"=@{
+            Street="2nd Avenue 9876"
+            Zip="666 78"
+        }
+        "Tullinge"=@{
+            Street="Storvägen 22A"
+            Zip="146 99"
+        }
+    }
 }
 
-$htmlCode = tGet-HtmlAccordion -InputData $UserList
+$htmlCode = Get-HtmlAccordion -InputData $UserList
 $tmp = ($outFile + $n + ".html")
 $htmlCode | Out-File -FilePath $tmp -Force
 
 Msg "PSCustomObject sample: $tmp"
 Invoke-Expression $tmp
 
-Exit 
+#Exit 
 
 $n++
 
-$htmlCode = Get-Process | Select-Object Name,Path,Company | tGet-HtmlAccordion
+$htmlCode = Get-Process | Select-Object Name,Path,Company | Get-HtmlAccordion
 $tmp = ($outFile + $n + ".html")
 $htmlCode | Out-File -FilePath $tmp -Force
 
