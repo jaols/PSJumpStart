@@ -35,7 +35,9 @@ One of the most useful features is the setting files solution. You can use eithe
 
 The package contains a `Functions` folder and an empty customizable `LocalLib` folder for local usage found in the module folder. Functions in the local folder will override any existing functions in the `Functions` folder, so you can copy a function and improve it for local usage. The `LocalLib` feature also extends to the current running scripts folder. So you can have the same function name in different versions at each script folders `LocalLib` location. The correct set of function files will be loaded by the `Import-Module` call.
 
-The `Msg`-function provides a generic handling of showing/logging information. It can be pre-configured using `.json` or `.dfp` files as described below. 
+The `Msg`-function provides a generic handling of showing/logging information. It can be pre-configured using `.json` or `.dfp` files as described below.
+
+The function `Add-ScriptHeader` will add a [comment-based help PowerShell header](https://learn.microsoft.com/en-us/powershell/scripting/developer/help/examples-of-comment-based-help?view=powershell-7.3) from the `param()` content and `Update-ScriptHeader` checks and fixes any missing parameter(s) in existing headers. Use `-WhatIf` option to see suggested header(s).
 
 Another noteworthy function is the `Get-ModuleHelp`-function for getting module information. Try it with or without arguments.
 
