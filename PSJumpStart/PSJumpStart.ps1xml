@@ -6,35 +6,35 @@
       <ScriptMethod>
         <Name>AppendValue</Name>
         <Script>
-					param(	           
-		   			[parameter(Mandatory=$true,Position=0)]
-		   			[string]$key, 		   
-		   			[parameter(Mandatory=$true,Position=1)]
-		   			[object]$data
-					)
-	        if ($this.ContainsKey($key)) {
-		        $currentData = $this[$key]                
-		        $this.Remove($key)                
-            $this.Add($key,@($currentData,$data))
-					} else {
-						$this.Add($key,$data)
-					}
+			param(
+				[parameter(Mandatory=$true,Position=0)]
+				[string]$key,
+				[parameter(Mandatory=$true,Position=1)]
+				[object]$data
+			)
+			if ($this.ContainsKey($key)) {
+				$newData=@($this[$key])
+				$newData += $data
+				$this.Remove($key)
+				$this.Add($key,$newData)
+			} else {
+				$this.Add($key,$data)
+			}
         </Script>
       </ScriptMethod>
       <ScriptMethod>
         <Name>Replace</Name>
         <Script>
-					param(	           
-		   			[parameter(Mandatory=$true,Position=0)]
-		   			[string]$key, 		   
-		   			[parameter(Mandatory=$true,Position=1)]
-		   			[object]$data
-					)
-	        if ($this.ContainsKey($key)) {		        
-		        $this.Remove($key)
-	        }
-					 
-		    	$this.Add($key,$data)	        
+			param(	           
+				[parameter(Mandatory=$true,Position=0)]
+				[string]$key, 		   
+				[parameter(Mandatory=$true,Position=1)]
+				[object]$data
+			)
+			if ($this.ContainsKey($key)) {		        
+				$this.Remove($key)
+			}
+			$this.Add($key,$data)
         </Script>
       </ScriptMethod>
     </Members>
