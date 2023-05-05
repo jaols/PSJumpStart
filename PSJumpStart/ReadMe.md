@@ -129,7 +129,7 @@ It is also possible to create a `LocalLib` folder in any location containing PSJ
 
 ## Loading DLL files
 
-The `PSJumpStart.psm1` file will also load any `.dll` files found in a `LocalLib` folder. The load order follow customized funktion loading. For example;
+The `PSJumpStart.psm1` file will use the `Add-Type` command to load any `.dll` files found in a `LocalLib` folder. The load order follow customized funktion loading. For example;
 
 A script is created in `C:\MuppetLabb` to read items from a Sharepoint list using CSOM. This requires the dll `Microsoft.SharePoint.Client.dll`. This dll file may be placed in the `C:\MuppetLabb\LocalLib` folder for exclusive use by scripts in `C:\MuppetLabb` or in the PSJumpStart module `LocalLib` folder for access by all PSJumpStart scripts. Only the `C:\MuppetLabb\LocalLib\Microsoft.SharePoint.Client.dll` will be lodaed for scripts in `C:\MuppetLabb` if the dll file is located in both folders.
 
