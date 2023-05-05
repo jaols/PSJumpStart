@@ -89,4 +89,9 @@ if ($pscmdlet.ShouldProcess("ActiveCode", "Run Code")) {
     #Put your commands/code here...
 }
 
+#Show any errors (but not variable not found)
+if ($Error -ne $null) { foreach ($err in $Error) {if ($err -notmatch "Cannot find a variable with the name") {
+    Write-Verbose "Err: - `n$err `n       $($err.ScriptStackTrace) `n`n$($err.InvocationInfo.PositionMessage)`n`n"
+}}}
+
 Msg "End Execution"

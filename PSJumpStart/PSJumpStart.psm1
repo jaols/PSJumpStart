@@ -1,12 +1,23 @@
-#Get PSJumpStart function files
-$FunctionLib = @(Get-ChildItem -Path $PSScriptRoot\Functions\*.ps1 -ErrorAction SilentlyContinue)
-#Get Local module lib function files
-$LocalModuleLib = @(Get-ChildItem -Path $PSScriptRoot\LocalLib\*.ps1 -ErrorAction SilentlyContinue)
-#Get Local lib function files (script folder OR current folder)
+#Get Local lib function script folder OR current folder
 $LocalLibPath=$MyInvocation.PSScriptRoot
 if ([string]::IsNullOrEmpty($LocalLibPath)) {    
     $LocalLibPath=$PWD.Path    
 } 
+
+#Get Local DLL files
+$AddTypesDlls = @(Get-ChildItem -Path $LocalLibPath\LocalLib\*.dll -ErrorAction SilentlyContinue)
+#Get Local module lib DLL files (but exclude locally loaded DLLs)
+$AddTypesDlls += @(Get-ChildItem -Path $PSScriptRoot\LocalLib\*.dll -Exclude ($AddTypesDlls | Select-Object -ExpandProperty Name)  -ErrorAction SilentlyContinue)
+
+if ($AddTypesDlls) {
+    Add-Type -Path ($AddTypesDlls | Select-Object -ExpandProperty FullName)
+}
+
+#Get PSJumpStart function files
+$FunctionLib = @(Get-ChildItem -Path $PSScriptRoot\Functions\*.ps1 -ErrorAction SilentlyContinue)
+#Get Local module lib function files
+$LocalModuleLib = @(Get-ChildItem -Path $PSScriptRoot\LocalLib\*.ps1 -ErrorAction SilentlyContinue)
+#Get functions from local lib in script folder
 $LocalLib = @(Get-ChildItem -Path $LocalLibPath\LocalLib\*.ps1 -ErrorAction SilentlyContinue)
 
 #$functionNames = @()
@@ -60,28 +71,6 @@ param($message)
     Write-Verbose $ExecutionContext.SessionState.Path 
 }
 
-function GatherErrorTest
-{
-    Begin
-    {
-        $Error.Clear()
-        $ErrorActionPreference = "SilentlyContinue"
-    }
-
-    Process
-    {
-        Get-AdUser -Identity "CrashThisCall"
-        Get-NetAdapter -Name "TheNetWayToHell"
-    }
-    End
-    {
-        #Check ALL errors (this was a bad idea!!)
-        foreach($err in $Error) {
-            Msg "Line " + $err.InvocationInfo.ScriptLineNumber + ":" + $err.Exception "ERROR"
-        }
-
-    }
-}
 
 #endregion
 

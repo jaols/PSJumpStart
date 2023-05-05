@@ -125,6 +125,11 @@ Process {
 }
 
 End {
-#End operations are run once in pipeline processing
+    #End operations are run once in pipeline processing
+    #Show any errors (but not variable not found)
+    if ($Error -ne $null) { foreach ($err in $Error) {if ($err -notmatch "Cannot find a variable with the name") {
+        Write-Verbose "Err: - `n$err `n       $($err.ScriptStackTrace) `n`n$($err.InvocationInfo.PositionMessage)`n`n"
+    }}}
+
     Msg "End Execution"
 }

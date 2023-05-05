@@ -2,21 +2,22 @@
 
 - [PSJumpStart](#psjumpstart)
   * [Introduction](#introduction)
-  * [Features and content](#features-and-content)
-  * [Why?](#why-)
+    + [Features and content](#features-and-content)
+    + [Why?](#why-)
   * [Practical usage of setting files](#practical-usage-of-setting-files)
     + [Using `dfp` files](#using--dfp--files)
     + [Using `json` files](#using--json--files)
     + [Arguments load order](#arguments-load-order)
+  * [Local customized functions](#local-customized-functions)
   * [The art of logging](#the-art-of-logging)
-  * [The Task Scheduler problem](#the-task-scheduler-problem)
+  * [Loading DLL files](#loading-dll-files)
   * [How to debug](#how-to-debug)
     + [Global debugging](#global-debugging)
     + [Specific script debugging](#specific-script-debugging)
     + [Function debugging](#function-debugging)
   * [The templates](#the-templates)
-  * [Local customized functions](#local-customized-functions)
   * [Script signing](#script-signing)
+  * [The Task Scheduler problem](#the-task-scheduler-problem)
   * [Down the rabbit hole](#down-the-rabbit-hole)
     + [`$PSDefaultParameterValues`](#--psdefaultparametervalues-)
     + [The `Msg` function](#the--msg--function)
@@ -27,31 +28,34 @@
 
 ## Introduction
 
-The PowerShell PSJumpStart module uses the built-in features in PowerShell to create an environment for the Power Administrator. The environment is highly customizable for different usages.A set of files is provided to jump start PowerShell script creation as well as some ready to use functions. The goal is to provide some simple start-up functions. Search the [PowerShell Gallery](https://www.powershellgallery.com/) or the internet to add functionallity or if a more potent function is needed than the included one.
+The PowerShell PSJumpStart module is a multi-purpose module targeted to create an environment for the Power Administrator to jump start PowerShell scripting. The environment is highly customizable for different usages. A template folder is included to provide a set of files to start PowerShell programming.
+The module comes with some simple but usefull start-up functions. Search the [PowerShell Gallery](https://www.powershellgallery.com/) or the internet to add functionallity or override inclueded functions.
 
-## Features and content
+### Features and content
 
-One of the most useful features is the setting files solution. You can use either `.json` or `.dfp` files to populate variables and/or the standard PowerShell feature `$PSDefaultParameterValues`. The files are read in a preset order so you may have different defaults for different scenarios.
+- One of the most useful features is the setting files solution. You can use either `.json` or `.dfp` files to populate variables and/or the standard PowerShell feature `$PSDefaultParameterValues`. The files are read in a preset order so you may have different defaults for different scenarios.
 
-The package contains a `Functions` folder and an empty customizable `LocalLib` folder for local usage found in the module folder. Functions in the local folder will override any existing functions in the `Functions` folder, so you can copy a function and improve it for local usage. The `LocalLib` feature also extends to the current running scripts folder. So you can have the same function name in different versions at each script folders `LocalLib` location. The correct set of function files will be loaded by the `Import-Module` call.
+- The package contains a `Functions` folder and an empty customizable `LocalLib` folder for local usage found in the module folder. Functions in the local folder will override any existing functions in the `Functions` folder, so you can copy a function and improve it for local usage. The `LocalLib` feature also extends to the current running scripts folder. So you can have the same function name in different versions at each script folders `LocalLib` location. The correct set of function files will be loaded by the `Import-Module` call.
 
-The `Msg`-function provides a generic handling of showing/logging information. It can be pre-configured using `.json` or `.dfp` files as described below.
+- Any DLL-files found in any `LocalLib` folders will be loaded by an `Add-Type` call. 
 
-The function `Add-ScriptHeader` will add a [comment-based help PowerShell header](https://learn.microsoft.com/en-us/powershell/scripting/developer/help/examples-of-comment-based-help?view=powershell-7.3) from the `param()` content and `Update-ScriptHeader` checks and fixes any missing parameter(s) in existing headers. Use `-WhatIf` option to see suggested header(s).
+- The `Msg`-function provides a generic handling of showing/logging information. It can be pre-configured using `.json` or `.dfp` files as described below.
 
-Another noteworthy function is the `Get-ModuleHelp`-function for getting module information. Try it with or without arguments.
+- The function `Add-ScriptHeader` will add a [comment-based help PowerShell header](https://learn.microsoft.com/en-us/powershell/scripting/developer/help/examples-of-comment-based-help?view=powershell-7.3) from the `param()` content and `Update-ScriptHeader` checks and fixes any missing parameter(s) in existing headers. Use `-WhatIf` option to see suggested header(s).
 
-A set of template files is provided to jump start script creation. The templates comes in two main flavors, PSJumpStart and Basic. The basic templates does not load the module and may act as stand alone scripts while the PSJumpStart templates is using the included module. All templates are  `Get-Help` enabled. The `Template` folder also holds the `ScriptSigner.ps1` file that will sign your files with an existing code signing certificate (or create a new one).
+- Another noteworthy function is the `Get-ModuleHelp`-function for getting module information. Try it with or without arguments.
 
-A template `CMD` file is also provided for calling PowerShell scripts with `StdOut` and `StdErr` capturing.  The primary intended use is launching PS-scripts from Task Scheduler as unhandled errors cannot be traced otherwise. It is a generic template and may be used to launch any PowerShell script.
+- A set of template files is provided to jump start script creation. The templates comes in two main flavors, PSJumpStart and Basic. The basic templates does not load the module and may act as stand alone scripts while the PSJumpStart templates is using the included module. All templates are  `Get-Help` enabled. The `Template` folder also holds the `ScriptSigner.ps1` file that will sign your files with an existing code signing certificate (or create a new one).
 
-The `Tests` folder in the module folder contains some fully featured test/sample scripts are included for reference.
+- A template `CMD` file is also provided for calling PowerShell scripts with `StdOut` and `StdErr` capturing.  The primary intended use is launching PS-scripts from Task Scheduler as unhandled errors cannot be traced otherwise. It is a generic template and may be used to launch any PowerShell script.
 
-One sample `ps1xml` file is included for extending the `HashTable` object type with methods for `Replace` and `AppendValue`.
+- The `Tests` folder in the module folder contains some fully featured test/sample scripts are included for reference.
 
-A script signing feature is included that is not dependent on the module. The script signing feature will use an existing certificate if found or create a new one at run-time.
+- One sample `ps1xml` file is included for extending the `HashTable` object type with methods for `Replace` and `AppendValue`.
 
-## Why?
+- A script signing feature is included that is not dependent on the module. The script signing feature will use an existing certificate if found or create a new one at run-time.
+
+### Why?
 
 Because we are system administrators that just want to get going with PowerShell using basic supporting functions for common use.
 
@@ -68,6 +72,8 @@ Because we would like to have local PS functions to expand/replace the PSJumpSta
 ## Practical usage of setting files
 
 Have a look in the `PSJumpStart.dfp` or `PSJumpStart.json` file (in the module `Functions` folder) using a text editor. Those are the least significant default settings. Use them to set your preferred configurations (see `$PSDefaultParameterValues` for details).
+
+It is also possible to call `Get-SettingFiles` to retreive a string array of file names with any given suffix.
 
 ### Using `dfp` files
 
@@ -115,11 +121,17 @@ Use the `-verbose` for any PSJumpStart template script to see the order of loadi
 
 The `json` or `dfp` files may also be used to setup the logging environment by setting default variables for the `Msg`function. It may write output to log files, event log or output to console only. Please remember to run any PowerShell as Adminstrator the first time to create any custom log name in the event log. The use of the settings files will enable you to set different event log names, but use this carefully as any script registered for a log name cannot write to another event log name without removing the source using `Remove-Eventlog`.
 
-## The Task Scheduler problem
+## Locally customized functions
 
-This module comes with a `.cmd` file used for calling its corresponding PowerShell. The `runCleanupEmptyGroups.cmd` will launch the `CleanupEmptyGroups.ps1` PowerShell script with any provided arguments. The default behaviour of this template is to catch any output from the PowerShell and dump it to a log file in a `logs` sub folder. If any unhandled exceptions occur they will be put in a separate `ERR_` log file.
-The primary use for this is in the Task Scheduler. If you launch a PowerShell script directly from Task Scheduler you will not be able to get the exception data written by the PowerShell script. The `.cmd` file will trap and log the information.
-The recomendation for Task Scheduled scripts is using a `.json` or `.dfp` named after the service account running the job. Then you may turn off any other logging method for `.ps1` files and let the `.cmd` file handle logging to file.
+During loading of functions the `PSJumpStart.psm1` file will load any `ps1` function files from the folder `LocalLib` in the modules folder. Customized functions will override any PSJumpStart functions. So you may add any local functions to enhance the module.
+
+It is also possible to create a `LocalLib` folder in any location containing PSJumpStart enabled `ps1` files. This makes it possible to have a set of `ps1` files targeted for a specific purpose with their own set of local functions. These functions will of course override any existing functions in the module folders.
+
+## Loading DLL files
+
+The `PSJumpStart.psm1` file will also load any `.dll` files found in a `LocalLib` folder. The load order follow customized funktion loading. For example;
+
+A script is created in `C:\MuppetLabb` to read items from a Sharepoint list using CSOM. This requires the dll `Microsoft.SharePoint.Client.dll`. This dll file may be placed in the `C:\MuppetLabb\LocalLib` folder for exclusive use by scripts in `C:\MuppetLabb` or in the PSJumpStart module `LocalLib` folder for access by all PSJumpStart scripts. Only the `C:\MuppetLabb\LocalLib\Microsoft.SharePoint.Client.dll` will be lodaed for scripts in `C:\MuppetLabb` if the dll file is located in both folders.
 
 ## How to debug
 
@@ -148,17 +160,17 @@ If you only need to get verbose printout from a specific function you can add `"
 
 In the `Templates`folder (living in the module folder) is a set of templates. Use `Find-PSTemplate`in the PSJumpStart module to list the template files. Copy a template to your preferred working space by using `Copy-PSTemplate`.
 
-## Locally customized functions
-
-During loading of functions the `PSJumpStart.psm1`file will load any `ps1` function files from the folder `LocalLib` in the modules folder. Customized functions will override any PSJumpStart functions. So you may add any local functions to enhance the module.
-
-It is also possible to create a `LocalLib` folder in any location containing PSJumpStart enabled `ps1` files. This makes it possible to have a set of `ps1` files targeted for a specific purpose with their own set of local functions. These functions will of course override any existing functions in the module folders.
-
 ## Script signing
 
 There is a little stand alone feature in the `Templates` folder for script signing. It will search for a valid `CodeSigning` capable certificate on the local computer. If not found a new self signed certificate will be created. The found/new certificate is then used to sign single scripts or all scripts in a folder. 
 
 This feature is **not** dependent on the PSJumpStart module.
+
+## The Task Scheduler problem
+
+This module comes with a `.cmd` file used for calling its corresponding PowerShell. The `runCleanupEmptyGroups.cmd` will launch the `CleanupEmptyGroups.ps1` PowerShell script with any provided arguments. The default behaviour of this template is to catch any output from the PowerShell and dump it to a log file in a `logs` sub folder. If any unhandled exceptions occur they will be put in a separate `ERR_` log file.
+The primary use for this is in the Task Scheduler. If you launch a PowerShell script directly from Task Scheduler you will not be able to get the exception data written by the PowerShell script. The `.cmd` file will trap and log the information.
+The recomendation for Task Scheduled scripts is using a `.json` or `.dfp` named after the service account running the job. Then you may turn off any other logging method for `.ps1` files and let the `.cmd` file handle logging to file.
 
 ## Down the rabbit hole
 
