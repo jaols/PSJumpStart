@@ -28,8 +28,9 @@
 
 ## Introduction
 
-The PowerShell PSJumpStart module is a multi-purpose module targeted to create an environment for the Power Administrator to jump start PowerShell scripting. The environment is highly customizable for different usages. A template folder is included to provide a set of files to start PowerShell programming.
-The module comes with some simple but usefull start-up functions. Search the [PowerShell Gallery](https://www.powershellgallery.com/) or the internet to add functionallity or override inclueded functions.
+The PowerShell PSJumpStart module is a multi-purpose module targeted to create an environment for running, creating and editing PowerShell scripts. The environment is highly customizable for different usages and the module comes with some simple but usefull start-up functions. Search the [PowerShell Gallery](https://www.powershellgallery.com/) or the internet to add functionallity or override included functions.
+
+A template folder is included to provide a set of files to jump start PowerShell programming.
 
 ### Features and content
 
