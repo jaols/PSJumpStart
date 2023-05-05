@@ -199,7 +199,7 @@ More information on the use of `$PSDefaultParameterValus`:
 
 ### The `Msg` function
 
-The unified way of writing output information from calling scripts. There are a number of arguments available when calling this function making it possible to write output to log file as well as windows Eventlog. Use `.dfp` files to set default values for input arguments. See the `MsgTest.dfp`file included in the module files for inspiration. 
+The unified way of writing output information from calling scripts. There are a number of arguments available when calling this function making it possible to write output to log file as well as windows Eventlog. Use the `.json` files framework to set default values for input arguments.
 
 The `Msg`-function will write messages using  `Write-Output` if it does not write output to a log file or eventlog. This will write messages to the std-out pipe. As PowerShell does not have a separated function output pipe you need to have this in mind when using `Msg`in called functions who returns data.
 
