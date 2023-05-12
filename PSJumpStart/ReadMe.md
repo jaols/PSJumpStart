@@ -46,6 +46,8 @@ A template folder is included to provide a set of files to jump start PowerShell
 
 - Another noteworthy function is the `Get-ModuleHelp`-function for getting module information. Try it with or without arguments.
 
+- A feature for cached `PSCredentials` for named systems is included. Run `Get-Help Get-AccessCredential` for details.
+
 - A set of template files is provided to jump start script creation. The templates comes in two main flavors, PSJumpStart and Basic. The basic templates does not load the module and may act as stand alone scripts while the PSJumpStart templates is using the included module. All templates are  `Get-Help` enabled. The `Template` folder also holds the `ScriptSigner.ps1` file that will sign your files with an existing code signing certificate (or create a new one).
 
 - A template `CMD` file is also provided for calling PowerShell scripts with `StdOut` and `StdErr` capturing.  The primary intended use is launching PS-scripts from Task Scheduler as unhandled errors cannot be traced otherwise. It is a generic template and may be used to launch any PowerShell script.
@@ -108,13 +110,13 @@ Call the function `Get-GlobalDefaultsFromJsonFiles` to get content for `$PSDefau
 
 The `json` or `dfp` files are read in a specific order where the most significant setting will rule over the lower order settings. The order of loading is:
 
-1. Provided arguments will always override any file settings,
-2. User logon ID file name in script folder
-3. Logon provider file name (domain or local machine) in script folder
-4. Script name file in script folder
-5. Logon provider file name (domain or local machine) in PSJumpStart module folder
-6. Any other loaded module name in the PSJumpStart module folder (for instance an `ActiveDirectory.dfp` file)
-7. The `PSJumpStart.dfp`file in the module folder.
+1. Provided arguments will always override any default file settings.
+2. User logon ID (`[System.Security.Principal.WindowsIdentity]::getCurrent()`) file name in script folder.
+3. Logon provider file name (domain or local machine) in script folder.
+4. Script name file in script folder.
+5. Logon provider file name (domain or local machine) in PSJumpStart module folder.
+6. Any other loaded module name in the PSJumpStart module `Functions` subfolder (for instance an `ActiveDirectory.json` file).
+7. The `PSJumpStart.json` file in the module `Functions` subfolder.
 
 Use the `-verbose` for any PSJumpStart template script to see the order of loading.
 
@@ -200,8 +202,15 @@ More information on the use of `$PSDefaultParameterValus`:
 
 ### The `Msg` function
 
-The unified way of writing output information from calling scripts. There are a number of arguments available when calling this function making it possible to write output to log file as well as windows Eventlog. Use the `.json` files framework to set default values for input arguments.
-
+The unified way of writing output information from calling scripts. There are a number of arguments available when calling this function making it possible to write output to log file as well as windows Eventlog. Use the `.json` files framework to set default values for input arguments. This example will write information to a log file (in script folder with same name as script + year and month) AND to the Windows Eventlog `PSJumpStart`:
+```json
+{
+    "Msg:useFileLog":  true,
+    "Msg:useEventLog":  true,
+    "Msg:logFile":  "($(Split-Path -Parent $MyInvocation.PSCommandPath) + '\\' + $(Split-Path -Leaf $MyInvocation.PSCommandPath) + '.' + (Get-Date -Format 'yyyy-MM') + '.Log')",
+    "Msg:EventLogName":  "PSJumpStart"    
+}
+```
 The `Msg`-function will write messages using  `Write-Output` if it does not write output to a log file or eventlog. This will write messages to the std-out pipe. As PowerShell does not have a separated function output pipe you need to have this in mind when using `Msg`in called functions who returns data.
 
 To use this function from any `psm1` function or nested functions, you may need to retrieve the global content of `$PSDefaultParameterValues` adding the following code line:
@@ -223,6 +232,8 @@ The PSJumpStart module will add two methods to the `Hashtable` variable type.  T
 [Some words on `Hashtables`](https://kevinmarquette.github.io/2016-11-06-powershell-hashtable-everything-you-wanted-to-know-about/)
 
 ### Notes/Tips
+
+It is possible to use `-defineNew` and/or `-overWriteExisting` when calling the function `Get-LocalDefaultValues` to load all variable definitions in all setting files. The function will normally only add values to existing empty variables (typically defined in the `param()` section). The `-overWriteExisting` option will turn the tables on the load order making setting files king of data.
 
 The folder `Tests` included in this package has some code samples for calling functions in the module. For example `SQLqueryTest.ps1` where the local function `dumpDBresult` explores the result from calling `Invoke-SqlQuery`. 
 
