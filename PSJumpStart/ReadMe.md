@@ -211,9 +211,9 @@ The unified way of writing output information from calling scripts. There are a 
     "Msg:EventLogName":  "PSJumpStart"    
 }
 ```
-The `Msg`-function will write messages using  `Write-Output` if it does not write output to a log file or eventlog. This will write messages to the std-out pipe. As PowerShell does not have a separated function output pipe you need to have this in mind when using `Msg`in called functions who returns data.
+The `Msg`-function will write messages using  `Write-Output` or `Write-Error` if it does not write output to a log file or eventlog. This will write messages to the std-out or std-err pipe. As PowerShell does not have a separated function output pipe you need to have this in mind when using `Msg`in called functions who returns data. If any logging is enabled (eventlog or file) the `Msg` will use `Write-Host` to present output. If this is not what you want, just copy the function to a `localLib` folder and change it according to current needs.
 
-To use this function from any `psm1` function or nested functions, you may need to retrieve the global content of `$PSDefaultParameterValues` adding the following code line:
+To use this function from any `psm1` (loaded) function or nested functions, you may need to retrieve the global content of `$PSDefaultParameterValues` adding the following code line:
 
  `$PSDefaultParameterValues = (Get-Variable -Name PSDefaultParameterValues -Scope Global).Value`
 
