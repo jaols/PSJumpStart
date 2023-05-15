@@ -21,6 +21,7 @@
   * [Down the rabbit hole](#down-the-rabbit-hole)
     + [`$PSDefaultParameterValues`](#psdefaultparametervalues)
     + [The `Msg` function](#the-msg-function)
+    + [The birth of the `Get-AccessCredential` function](#the-birth-of-the-get-accesscredential-function)
     + [The `$CallerInvocation` story](#the-callerinvocation-story)
     + [`Hashtable` type add-on](#hashtable-type-add-on)
     + [Notes/Tips](#notestips)
@@ -216,6 +217,11 @@ The `Msg`-function will write messages using  `Write-Output` or `Write-Error` if
 To use this function from any `psm1` (loaded) function or nested functions, you may need to retrieve the global content of `$PSDefaultParameterValues` adding the following code line:
 
  `$PSDefaultParameterValues = (Get-Variable -Name PSDefaultParameterValues -Scope Global).Value`
+
+### The birth of the `Get-AccessCredential` function
+There are times when you just want to run your admin task PowerShell without typing the password at every run time. And one morning I just got tired of it, so I wrote this function. It is based on the commonly used `PSCredential` object and this loaded by `Import-Clixml` and saved using `Export-Clixml`. If a file is missing the function will call itself with the `-renew` option presenting a dialog for getting new credentials. The saved `xml` file is protected by both current user and computer context. It is only possible for the correct user to retreive the password in clear text.
+
+So the name of the cashed credential file will be `$env:ComputerName + "." + $env:UserName + "$AccessName.xml"`. The AccessName may be used to identify access files for different systems/purposes.
 
 ### The `$CallerInvocation` story
 
