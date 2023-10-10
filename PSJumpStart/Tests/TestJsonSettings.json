@@ -1,3 +1,9 @@
 {
-    "PSpids":  "(Get-Process -Name \"PowerShell\" | Select-Object -ExpandProperty Id)"
+    "PSpids":  "(Get-Process -Name \"PowerShell\" | Select-Object -ExpandProperty Id)",
+    "StringValue":" (Get-Process -Name \"PowerShell\" | Select-Object -ExpandProperty Id)",
+    "RestApi":{
+        "AccessUrl":"http://server/EE",
+        "AccessCredential":"(Get-AccessCredential -AccessName 'RestAPi')",
+        "UseMethod":"ooolala"
+    }
 }

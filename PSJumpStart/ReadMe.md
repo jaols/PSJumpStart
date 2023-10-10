@@ -4,9 +4,9 @@
   * [Introduction](#introduction)
     + [Features and content](#features-and-content)
     + [Why?](#why)
-  * [Practical usage of setting files](#practical-usage-of-setting-files)
-    + [Using `dfp` files](#using-dfp-files)
+  * [Practical usage of setting files](#practical-usage-of-setting-files)    
     + [Using `json` files](#using-json-files)
+    + [Using `dfp` files](#using-dfp-files)
     + [Arguments load order](#arguments-load-order)
   * [Locally customized functions](#locally-customized-functions)
   * [The art of logging](#the-art-of-logging)
@@ -75,13 +75,26 @@ Because we would like to have local PS functions to expand/replace the PSJumpSta
 
 ## Practical usage of setting files
 
-Have a look in the `PSJumpStart.dfp` or `PSJumpStart.json` file (in the module `Functions` folder) using a text editor. Those are the least significant default settings. Use them to set your preferred configurations (see `$PSDefaultParameterValues` for details).
+Have a look in the `PSJumpStart.json` or `PSJumpStart.dfp` file (in the module `Functions` folder) using a text editor. Those are the least significant default settings. Use them to set your preferred configurations (see `$PSDefaultParameterValues` for details).
 
-It is also possible to call `Get-SettingFiles` to retreive a string array of file names with any given suffix.
+The load order of setting files is described below, but let's have an example; A PowerShell file is located on a test-server and a prod-server. The file issues an `Invoke-RestMethod` but you want each file to use different URL:s accoring to environment. The url is part of input parameters as `$RestApiUrl`, but you want default value depending on script location. If the servers are located in different domains the solution would be to create domain named `json` files. If the servers are sitting in the same domain the solution is made by creating server named `json` files.
 
-### Using `dfp` files
+### Using `json` files
 
 These files may be used to set default values for script input arguments as well as function call arguments. The syntax for setting default values for standard functions follow the `$PSDefaultParameterValues`
+
+`"Function-Name:Argument-Name":"value/code"`
+
+To populate standard input argument values to a `.ps1` you remove the function name part of the line above
+
+`"Argument-Name":"value/code"`
+
+So if you want `$PSpids` to contain currently running PowerShell sessions, you may use `"PSpids":  "(Get-Process -Name \"PowerShell\" | Select-Object -ExpandProperty Id)"` in a `json`file.
+
+Call the function `Get-GlobalDefaultsFromJsonFiles` to get content for `$PSDefaultParameterValues`. Copy the `GetLocalDefaultsFromFiles` function from the template file `PSJumpStartStdTemplateWithArguments.ps1`. Or just use the template as starting point.
+### Using `dfp` files
+
+The `.dfp` flawor works the same waay as the `.json` files. The support is provided for legacy reasons. The syntax for setting default values for standard functions looks like this
 
 `Function-Name:Argument-Name=value/code`
 
@@ -93,33 +106,21 @@ So if you are using a site name argument in several scripts  ,`[string]$SiteName
 
 Call the function `Get-GlobalDefaultsFromDfpFiles` to get content for `$PSDefaultParameterValues` and the local function `GetLocalDefaultsFromDfpFiles` to set local script variables. Or simply use the template file `PSJumpStartStdTemplateWithArgumentsDfp.ps1` as a starting point.
 
-### Using `json` files
-
-The `.json` flawor works the same waay as the `.dfp` files. The syntax for setting default values for standard functions looks like this
-
-`"Function-Name:Argument-Name":"value/code"`
-
-To populate standard input argument values to a `.ps1` you remove the function name part of the line above
-
-`"Argument-Name":"value/code"`
-
-So if you want `$PSpids` to contain currently running PowerShell sessions, you may use `"PSpids":  "(Get-Process -Name \"PowerShell\" | Select-Object -ExpandProperty Id)"` in a `json`file.
-
-Call the function `Get-GlobalDefaultsFromJsonFiles` to get content for `$PSDefaultParameterValues`. Copy the `GetLocalDefaultsFromFiles` function from the template file `PSJumpStartStdTemplateWithArguments.ps1`. Or use the template.
-
 ### Arguments load order
 
-The `json` or `dfp` files are read in a specific order where the most significant setting will rule over the lower order settings. The order of loading is:
+The `json` or `dfp` files are read in a specific order by `Get-SettingFiles` where the most significant setting will rule over the lower order settings. The order of loading is:
 
 1. Provided arguments will always override any default file settings.
 2. User logon ID (`[System.Security.Principal.WindowsIdentity]::getCurrent()`) file name in script folder.
-3. Logon provider file name (domain or local machine) in script folder.
-4. Script name file in script folder.
-5. Logon provider file name (domain or local machine) in PSJumpStart module folder.
-6. Any other loaded module name in the PSJumpStart module `Functions` subfolder (for instance an `ActiveDirectory.json` file).
-7. The `PSJumpStart.json` file in the module `Functions` subfolder.
+3. Computer file name (`$Env:COMPUTERNAME`) in script folder.
+4. Logon provider file name (domain or local machine) in script folder.
+5. Script name file in script folder.
+6. Computer file name (`$Env:COMPUTERNAME`) in script folder.
+7. Logon provider file name (domain or local machine) in PSJumpStart module folder.
+8. Any other loaded module name in the PSJumpStart module `Functions` subfolder (for instance an `ActiveDirectory.json` file).
+9. The `PSJumpStart.json` file in the module `Functions` subfolder.
 
-Use the `-verbose` for any PSJumpStart template script to see the order of loading.
+It is also possible to call `Get-SettingFiles` to retreive a string array of file names with any given suffix in the above order.
 
 ### The art of logging
 
@@ -181,15 +182,30 @@ The recomendation for Task Scheduled scripts is using a `.json` or `.dfp` named 
 Let's dive in to look at some of the main features in the package.
 
 ### Script arguments and variable population
-The function `GetLocalDefaultsFromDfpFiles` is a local script function for using `dfp` files to populate default arguments. So the `param($ArgOne)` will be populatated from the line `ArgOne="This is the default value if the user does not provide a command line value"` in any found `dfp` file.
+The local function for `json` files is named `Get-LocalDefaultVariables` to populate default script arguments. The `param($ArgOne)` will be populatated from the line `"ArgOne":"This is the default value if the user does not provide a command line value"` in any found `json` file. It is possible to use a structural `json` file for populating variables.
 
-The corresponding local function for `json` files is named `Get-LocalDefaultVariables` and has two extra arguments. The switch `-defineNew` will create local variables for all found variables in `json` files, not only existing empoty variables (input arguments) in the local script. The other switch is `-overWriteExisting` that will reverse the load order making the module `json` files override any user provided command arguments or settings.
+```json
+{
+    "RestApi":{
+        "AccessUrl":"http://server/EE",
+        "AccessCredential":"(Get-AccessCredential -AccessName 'RestApi')",
+        "UseMethod":"ooolala"
+    }
+}
+```
+The value for `UseMethod` above is found in the PowerShell variable `$RestApi.UseMethod`.
+
+The function `Get-LocalDefaultVariables` has two extra arguments. The switch `-defineNew` will create local variables for all found variables in `json` files, not only existing empty variables (input arguments) in the local script. The other switch is `-overWriteExisting` that will reverse the load order making the module `json` files override any user provided command arguments or settings.
+
+The corresponding local function `GetLocalDefaultsFromDfpFiles` is a local script function for using `dfp` files to populate default arguments. But it is missing the extras...
+
 
 ### `$PSDefaultParameterValues`
 
-The use of `json` or `dfp` files separates default parameters from the PowerShell scripts. The files are loaded in a preset order using the `Get-SettingsFiles` function where the first encountered setting is used. So user preference will override the default settings for the `psm1` module file. The `Get-GlobalDefaultsFromJsonFiles` function is used for loading `json` file content into the PowerShell variable `$PSDefaultParameterValues` the corresponding function for `dfp` files is of course `Get-GlobalDefaultsFromDfpFiles`.
+The use of `json` or `dfp` files separates default parameters from the PowerShell scripts. The files are loaded in a preset order using the `Get-SettingsFiles` function where the first encountered setting is used. The `Get-GlobalDefaultsFromJsonFiles` function is used for loading `json` file content into the PowerShell variable `$PSDefaultParameterValues` the corresponding function for `dfp` files is of course `Get-GlobalDefaultsFromDfpFiles`.
 
- As the `$PSDefaultParameterValues` may be set for all functions it is possible for `Write-Verbose` to present output from directly called functions in `psm1` modules without typing `-Verbose:$VerbosePrefererence` in ALL function calls. To ensure debugging in nested `psm1` function calls you need to add the command `$PSDefaultParameterValues = (Get-Variable -Name PSDefaultParameterValues -Scope Global).Value` in the calling `psm1` function.
+ As `$PSDefaultParameterValues` may be set for all functions it is possible for `Write-Verbose` to present output from directly called functions in modules without adding `-Verbose:$VerbosePrefererence` in the calling script. 
+ **PLEASE NOTE** that the `$PSDefaultParameterValues` is NOT inherited into called child module functions. To ensure standard values use in nested module function (`psm1`) calls you need to add the command `$PSDefaultParameterValues = (Get-Variable -Name PSDefaultParameterValues -Scope Global).Value` in the calling module function (not pretty but it works).
 
 [The story behind the `Get-CallerPreference`function](https://blogs.technet.microsoft.com/heyscriptingguy/2014/04/26/weekend-scripter-access-powershell-preference-variables/)
 

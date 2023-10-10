@@ -1,8 +1,6 @@
 [CmdletBinding()]
 param(
-    $Arg1=(Get-Process -Name "PowerShell"),
-    $StringValue,
-    $Arg3
+    [int]$NestedNum
 )
 
 #region Init
@@ -62,31 +60,44 @@ function Get-LocalDefaultVariables {
     }
 }
 #endregion
-
+Remove-Module PSJumpStart
 Import-Module PSJumpStart -Force -MinimumVersion 1.2.0
 
 #Retreive variables for this script (overwrite input arguments with -overWriteExisting).
-Get-LocalDefaultVariables -CallerInvocation $MyInvocation -Verbose -defineNew
+Get-LocalDefaultVariables -CallerInvocation $MyInvocation 
 #Get default paramters when calling functions (for example std-adserver)
 $PSDefaultParameterValues = Get-GlobalDefaultsFromJsonFiles $MyInvocation 
 
 #endregion
 
-Msg "Start Execution"
+Msg "Session $NestedNum - Start Execution"
 
-$Arg1
-Msg "Used static default value (not recommended)"
+#NOTE: Start two PS-windows 4 better testing
 
-#Retreived from script json file
-$PSpids
-Msg "Used json file content as -defineNew option is in play"
+#Same mutex id for all instances
+$MutexId = "de9a280d-ce61-4eca-adba-70332a68e065"
 
-Msg "Space added to prevent code evaluation in [$StringValue]"
+#Create or wait for mutex
+Msg "Session $NestedNum - Wait for mutex release"
+$mutex = Wait-OnMutex $MutexId -WaitCycleCount 100 -WaitTimeMilliseconds 1000
 
 
-Msg ("The setting for RestApi Url is: [" + $RestApi.AccessUrl + "]")
-Msg ("The setting for RestApi Method is: [" + $RestApi.UseMethod + "]")
+#region Sensitive code!! May only run one instance at a time!
+if ($NestedNum -lt 1) {    
+    for ($i = 1; $i -lt 6; $i++) {                
+        Msg "Session $NestedNum - Call myself with argument -NestedNum  $i"
+        & $MyInvocation.MyCommand.Definition -NestedNum $i
+    }
+} else {
+    Msg "Session $NestedNum - wait 3 seconds"
+    Start-Sleep -Seconds 3
+}
+#endregion
 
-#Get-Variable | ConvertTo-Json | Msg
 
-Msg "End Execution"
+Msg "Session $NestedNum - Release Mutex and cleanup last error"
+Unlock-Mutex -MutexId $MutexId
+$Error.RemoveAt(0)
+
+
+Msg "Session $NestedNum - End Execution"

@@ -39,14 +39,17 @@ function Get-SettingsFiles {
         
         Write-Verbose "UserId: $UserId"
         Write-Verbose "Context: $LogonContext"
+        Write-Verbose "ComputerName: $($Env:COMPUTERNAME)"
 
         #Add local environment settingsfiles (user specific or domain/computer specific)
         #also script specific defaults (local vars??) 
         $settingFiles = @(        
             "$callerLocation\$UserID$extension"
+            "$callerLocation\$($Env:COMPUTERNAME)$extension"
             "$callerLocation\$LogonContext$extension"
             ($CallerInvocation.MyCommand.Definition -replace ".ps1","") + "$extension"
-            "$globalLocation\$LogonContext$extension"        
+            "$globalLocation\$($Env:COMPUTERNAME)$extension"
+            "$globalLocation\$LogonContext$extension"
         )
     
         #Add module specific setting xml-files
