@@ -1,9 +1,8 @@
  <#
     .Synopsis
-       Template 
+       Demo of credentials with Get-AccessCredential
     .DESCRIPTION
-       This template will load $PSDefaultParameterValues and the PSJumpStart module
-       and has support for Write-Verbose, -WhatIf and whatnot.
+       Run this file two times. The first will ask for credentials and the second will use saved credentials
     .Notes
        Author date 
        Changes
@@ -76,7 +75,7 @@ if (-not (Get-Module PSJumpStart)) {
    Import-Module PSJumpStart -Force -MinimumVersion 1.3.0
 }
 
-Get-LocalDefaultVariables $MyInvocation -defineNew
+Get-LocalDefaultVariables $MyInvocation -defineNew -overWriteExisting
 
 #Get global deafult settings when calling modules
 $PSDefaultParameterValues = Get-GlobalDefaultsFromJsonFiles $MyInvocation -Verbose:$VerbosePreference
@@ -85,15 +84,13 @@ $PSDefaultParameterValues = Get-GlobalDefaultsFromJsonFiles $MyInvocation -Verbo
 
 Msg "Start Execution"
 
-Write-Verbose "Script is in $scriptPath"
+#Cred files path is set in the json file for this test script
+$Credentials=Get-AccessCredential -AccessName "Office365"
 
-if ($pscmdlet.ShouldProcess("ActiveCode", "Run Code")) {
-    #Put your commands/code here...
-}
+Msg ("User name 4 access: " + $Credentials.UserName)
 
-#Show any errors (but not variable not found)
-if ($Error -ne $null) { foreach ($err in $Error) {if ($err -notmatch "Cannot find a variable with the name") {
-    Write-Verbose "Err: - `n$err `n       $($err.ScriptStackTrace) `n`n$($err.InvocationInfo.PositionMessage)`n`n"
-}}}
+Msg ("Credential was/is saved here " + $PSDefaultParameterValues["Get-AccessCredential:CredFilesPath"] + ":")
+
+Msg (Get-ChildItem -Path ($PSDefaultParameterValues["Get-AccessCredential:CredFilesPath"] + "\" + $env:ComputerName + "*.xml"))
 
 Msg "End Execution"

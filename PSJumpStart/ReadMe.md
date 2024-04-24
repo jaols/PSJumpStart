@@ -25,13 +25,15 @@
     + [The `$CallerInvocation` story](#the-callerinvocation-story)
     + [`Hashtable` type add-on](#hashtable-type-add-on)
     + [Notes/Tips](#notestips)
+    + [PowerShell reading](#powershell-reading)
+    + [Other repositories](#other-repositories)    
   * [Contribute](#contribute)
 
 ## Introduction
 
-The PowerShell PSJumpStart module is a multi-purpose module targeted to create an environment for running, creating and editing PowerShell scripts. The environment is highly customizable for different usages and the module comes with some simple but usefull start-up functions. Search the [PowerShell Gallery](https://www.powershellgallery.com/) or the internet to add functionallity or override included functions.
+The PowerShell PSJumpStart module is a multi-purpose module targeted to create an environment for running, creating and editing PowerShell scripts. The environment is highly customizable for different usages and the module comes with some simple but usefull start-up functions. Search the [PowerShell Gallery](https://www.powershellgallery.com/) or the internet to add functionallity or override included functions. See [Other repositories](#other-repositories) section for inspiration.
 
-A template folder is included to provide a set of files to jump start PowerShell programming.
+A folder with template files are included to provide a set of files to jump start PowerShell programming.
 
 ### Features and content
 
@@ -39,7 +41,11 @@ A template folder is included to provide a set of files to jump start PowerShell
 
 - The package contains a `Functions` folder and an empty customizable `LocalLib` folder for local usage found in the module folder. Functions in the local folder will override any existing functions in the `Functions` folder, so you can copy a function and improve it for local usage. The `LocalLib` feature also extends to the current running scripts folder. So you can have the same function name in different versions at each script folders `LocalLib` location. The correct set of function files will be loaded by the `Import-Module` call.
 
-- Any DLL-files found in any `LocalLib` folders will be loaded by an `Add-Type` call. 
+- Any DLL-files found in any `LocalLib` folder will be loaded by an `Add-Type` call. 
+
+- Any `.Ps1Xml` files found in any `TypeData` folder will be loaded according to the same loading order as the `LocalLib` process. 
+
+- Any `Format.Ps1Xml` files found in any `Formats` folder will be loaded according to the same loading order as the `LocalLib` process. 
 
 - The `Msg`-function provides a generic handling of showing/logging information. It can be pre-configured using `.json` or `.dfp` files as described below.
 
@@ -53,11 +59,13 @@ A template folder is included to provide a set of files to jump start PowerShell
 
 - A template `CMD` file is also provided for calling PowerShell scripts with `StdOut` and `StdErr` capturing.  The primary intended use is launching PS-scripts from Task Scheduler as unhandled errors cannot be traced otherwise. It is a generic template and may be used to launch any PowerShell script.
 
-- The `Tests` folder in the module folder contains some fully featured test/sample scripts are included for reference.
+- The `Samples` folder in the module folder contains test/sample scripts for reference.
 
 - One sample `ps1xml` file is included for extending the `HashTable` object type with methods for `Replace` and `AppendValue`.
 
 - A script signing feature is included that is not dependent on the module. The script signing feature will use an existing certificate if found or create a new one at run-time.
+
+- The `_Tests_` folder has a set of [Pester](https://pester.dev/docs/quick-start) tests.
 
 ### Why?
 
@@ -92,6 +100,7 @@ To populate standard input argument values to a `.ps1` you remove the function n
 So if you want `$PSpids` to contain currently running PowerShell sessions, you may use `"PSpids":  "(Get-Process -Name \"PowerShell\" | Select-Object -ExpandProperty Id)"` in a `json`file.
 
 Call the function `Get-GlobalDefaultsFromJsonFiles` to get content for `$PSDefaultParameterValues`. Copy the `GetLocalDefaultsFromFiles` function from the template file `PSJumpStartStdTemplateWithArguments.ps1`. Or just use the template as starting point.
+
 ### Using `dfp` files
 
 The `.dfp` flawor works the same waay as the `.json` files. The support is provided for legacy reasons. The syntax for setting default values for standard functions looks like this
@@ -257,17 +266,29 @@ The PSJumpStart module will add two methods to the `Hashtable` variable type.  T
 
 It is possible to use `-defineNew` and/or `-overWriteExisting` when calling the function `Get-LocalDefaultValues` to load all variable definitions in all setting files. The function will normally only add values to existing empty variables (typically defined in the `param()` section). The `-overWriteExisting` option will turn the tables on the load order making setting files king of data.
 
-The folder `Tests` included in this package has some code samples for calling functions in the module. For example `SQLqueryTest.ps1` where the local function `dumpDBresult` explores the result from calling `Invoke-SqlQuery`. 
+The folder `Samples` included in this package has some code samples for calling functions in the module. For example `SQLqueryTest.ps1` where the local function `dumpDBresult` explores the result from calling `Invoke-SqlQuery`. 
 
 The template folder also include the file `Set-PSJumpStartCommandPromtEnvironment.ps1`. This file will create variables according to the current set of `json` files with verbose output. This is very useful in some test and/or development scenarios.
 
+### PowerShell reading
+Futher down the rabbit hole to Jumstart your PS authoring... 
+
 [A nice article on the practical use of CustomObjects in PowerShell](https://social.technet.microsoft.com/wiki/contents/articles/7804.powershell-creating-custom-objects.aspx)
 
+[Deep dive articles at Microsoft](https://learn.microsoft.com/en-us/powershell/scripting/learn/deep-dives/overview?view=powershell-7.4) provides a set of articles for usefull information.
+
+### Other repositories
+There are many very talanted people out there and this is just a few samples found searching for inspirations. You may populate your local environment with whatever you need.
+
+[PSScriptTools](https://github.com/jdhitsolutions/PSScriptTools) is a generic library of functions/formats/types focused on enhancing the PowerShell console prompt. The module is installed from [Powershell Gallery](https://www.powershellgallery.com/packages/PSScriptTools)
+
+[PoshFunctions](https://github.com/riedyw/PoshFunctions) is also a vast collection of functions for use in different scenarios. This is also found at [PowerShell Gallery](https://github.com/riedyw/PoshFunctions).
+
+[ADExportImport](https://github.com/jaols/ADExportImport) is a solution based on this module. The solution exports/imports Active Directory object structure. The `LocalLib` folder has specific functions used by the solution.
+
+[ServiceAccountHandler](https://github.com/jaols/ServiceAccountHandler) is also a solution using the PSJumpStart framework. It handles service account passwords for a set of computers/services.
 
 ## Contribute
 
-Please feel free to add an issue and suggest improvements or contribute with functions. As the end line from the movie `The Matrix` puts it:
+Please feel free to add an issue for suggest improvements or found issues.
 
-"A world where anything is possible. Where we go from there is a choice I leave to you."
-
-Keep up the good work.

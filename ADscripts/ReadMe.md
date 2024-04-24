@@ -1,1 +1,2 @@
-#Ad script samples
+# Ad script samples
+These files use the PSJumpStart framework for settings and default argument values

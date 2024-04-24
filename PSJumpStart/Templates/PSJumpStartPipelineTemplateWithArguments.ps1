@@ -9,17 +9,17 @@
 .PARAMETER Action
    	Second optional string argument. This may be populated by JSON content and the function Get-LocalDefaultVariables
 .PARAMETER Flag
-	Switch parameter check with if ($flag:IsPresent) {}
+	Switch parameter check with "if ($flag:IsPresent) {}" or just "if ($flag) {}"
 .Notes
     Author: 
     Changes:
 
 .Example
-    Get-EventLog -List| Select @{n="Name";e={$_.Log}} | PSJumpStartStdTemplateWithArguments.ps1 -Action "Check"
+    Get-EventLog -List| Select @{n="Name";e={$_.Log}} | PSJumpStartPipelineTemplateWithArguments.ps1 -Action "Check"
 
     Pipe data into the script.
 .Example
-    PSJumpStartStdTemplateWithArguments.ps1 -Name "Olala" -Action "Check"
+    PSJumpStartPipelineTemplateWithArguments.ps1 -Name "Olala" -Action "Check"
 
     Run process for single object
 
@@ -35,92 +35,96 @@ param (
 )
 
 Begin {
-#Begin operations are run one time for pipeline processing
-
-#region local functions 
-
-#Load default arguemts for this script.
-#Command prompt arguments will override file settings
-function Get-LocalDefaultVariables {
-    [CmdletBinding(SupportsShouldProcess = $False)]
-    param(
-        [parameter(Position=0,mandatory=$true)]
-        $CallerInvocation,
-        [switch]$defineNew,
-        [switch]$overWriteExisting
-    )
-    foreach($settingsFile in (Get-SettingsFiles $CallerInvocation ".json")) {        
-        if (Test-Path $settingsFile) {        
-            Write-Verbose "Reading file: [$settingsFile]"
-            $DefaultParamters = Get-Content -Path $settingsFile -Encoding UTF8 | ConvertFrom-Json
-            ForEach($prop in $DefaultParamters | Get-Member -MemberType NoteProperty) {        
-                
-                if (($prop.Name).IndexOf(':') -eq -1) {
-                    $key=$prop.Name
-                    $var = Get-Variable $key -ErrorAction SilentlyContinue
-                    $value = $DefaultParamters.($prop.Name)                    
-                    if (!$var) {
-                        if ($defineNew) {
-                            Write-Verbose "New Var: $key" 
-                            if ($value.GetType().Name -eq "String" -and $value.SubString(0,1) -eq '(') {
-                                $var = New-Variable -Name  $key -Value (Invoke-Expression $Value) -Scope 1
-                            } else {
-                                $var = New-Variable -Name  $key -Value $value -Scope 1
+    #Begin operations are run one time for pipeline processing
+    
+    #Clear Error(s) for this script session
+    $Error.Clear()
+    
+    #region local functions 
+        
+    function Get-LocalDefaultVariables {
+         <#
+        .Synopsis
+            Load default arguemts for this PS-file.
+        .DESCRIPTION
+            Get setting files according to load order and set variables.
+            Command prompt arguments will override any file settings
+        .PARAMETER CallerInvocation
+            $MyInvocation of calling code session            
+        .PARAMETER defineNew
+            Add ALL variables found in setting files
+        .PARAMETER overWriteExisting
+            Turns the table for variable handling file content will override command line arguments                                
+        #>
+        [CmdletBinding(SupportsShouldProcess = $False)]
+        param(
+            [parameter(Position=0,mandatory=$true)]
+            $CallerInvocation,
+            [switch]$defineNew,
+            [switch]$overWriteExisting
+        )
+        foreach($settingsFile in (Get-SettingsFiles $CallerInvocation ".json")) {        
+            if (Test-Path $settingsFile) {        
+                Write-Verbose "$($MyInvocation.Mycommand) reading: [$settingsFile]"
+                $DefaultParamters = Get-Content -Path $settingsFile -Encoding UTF8 | ConvertFrom-Json | Set-ValuesFromExpressions
+                ForEach($property in $DefaultParamters.psobject.properties.name) {
+                    #Exclude PSDefaultParameterValues ("functionName:Variable":"Value")
+                    if (($property).IndexOf(':') -eq -1) {
+                        $var = Get-Variable $property -ErrorAction SilentlyContinue
+                        $value = $DefaultParamters.$property
+                        if (!$var) {
+                            if ($defineNew) {
+                                Write-Verbose "New Var: $property"
+                                $var = New-Variable -Name  $property -Value $value -Scope 1
                             }
-                        }
-                    } else {
-
-                        #We only overwrite non-set values if not forced
-                        if (!($var.Value) -or $overWriteExisting)
-                        {
-                            try {                
-                                Write-Verbose "Var: $key" 
-                                if ($value.GetType().Name -eq "String" -and $value.SubString(0,1) -eq '(') {
-                                    $var.Value = Invoke-Expression $value
-                                } else {
+                        } else {
+                            #We only overwrite non-set values if not forced
+                            if (!($var.Value) -or $overWriteExisting)
+                            {
+                                try {                
+                                    Write-Verbose "Var: $property" 
                                     $var.Value = $value
+                                } Catch {
+                                    $ex = $PSItem
+                                    $ex.ErrorDetails = "Err adding $property from $settingsFile. " + $PSItem.Exception.Message
+                                    throw $ex
                                 }
-                            } Catch {
-                                $ex = $PSItem
-                                $ex.ErrorDetails = "Err adding $key from $settingsFile. " + $PSItem.Exception.Message
-                                throw $ex
                             }
                         }
                     }
                 }
+            } else {
+                Write-Verbose "File not found: [$settingsFile]"
             }
-        } else {
-            Write-Verbose "File not found: [$settingsFile]"
         }
-
     }
-}
-#endregion
+    #endregion
     
     #region Init
     $scriptPath = Split-Path -Parent $MyInvocation.MyCommand.Definition
     if (-not (Get-Module PSJumpStart)) {
-        Import-Module PSJumpStart -Force -MinimumVersion 1.2.0
+        Import-Module PSJumpStart -Force -MinimumVersion 1.3.0
     }
     
-    #Get Local variable default values from external DFP-files
-    Get-LocalDefaultVariables($MyInvocation)
+    #Get Local variable default values from external JSON-files
+    Get-LocalDefaultVariables $MyInvocation 
     
     #Get global deafult settings when calling modules
-    $PSDefaultParameterValues = Get-GlobalDefaultsFromJsonFiles $MyInvocation -Verbose:$VerbosePreference
+    $PSDefaultParameterValues = Get-GlobalDefaultsFromJsonFiles $MyInvocation 
     
     #endregion
 
     Msg "Start Execution"
+    Write-Verbose "Script is in $scriptPath"
 }
 
 
 Process {
 #Process operations are run for each object in pipeline processing
-    Write-Verbose "Script is in $scriptPath"
+    $PSDefaultParameterValues
 
     if ($pscmdlet.ShouldProcess("ActiveCode", "Run Code")) {
-        Msg "Processing value [$Name] try the [$Action]"
+        Msg "Processing value [$Name] try action [$Action]"
     }
 }
 

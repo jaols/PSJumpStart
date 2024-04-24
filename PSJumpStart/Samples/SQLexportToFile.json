@@ -1,0 +1,6 @@
+{
+"Invoke-SqlQuery:ConnectionString":"server='.';database='Northwind';trusted_connection=true;",
+"Out-DataTableToFile:FileName":"SQLexportToFile.csv",
+"Out-DataTableToFile:CSVseparator": ";",
+"Out-DataTableToFile:Encoding":"UTF8"
+}

@@ -1,7 +1,0 @@
-#
-# Default parameters for local script
-#
-searchRootOU=""
-monthsDisabled=9
-exceptionGroup=""
-

@@ -1,16 +1,10 @@
- <#
-    .Synopsis
-       Template 
-    .DESCRIPTION
-       This template will load $PSDefaultParameterValues and the PSJumpStart module
-       and has support for Write-Verbose, -WhatIf and whatnot.
-    .Notes
-       Author date 
-       Changes
-#>
-[CmdletBinding(SupportsShouldProcess = $True)]
-param ()
+[CmdletBinding(SupportsShouldProcess = $False)]
+param (          
+   [string]$Message,
+   [switch]$NoRecurse
+)
 
+#region Init
 #region local functions
 function Get-LocalDefaultVariables {
      <#
@@ -70,30 +64,33 @@ function Get-LocalDefaultVariables {
 }
 #endregion
 
-#region Init
-$scriptPath = Split-Path -Parent $MyInvocation.MyCommand.Definition
-if (-not (Get-Module PSJumpStart)) {
-   Import-Module PSJumpStart -Force -MinimumVersion 1.3.0
-}
+#get-module PSJumpStart | Remove-Module;
 
+Import-Module PSJumpStart -MinimumVersion 1.3.0 -Force
+
+#Get Local variable default values from external Json-files
 Get-LocalDefaultVariables $MyInvocation -defineNew
 
+
 #Get global deafult settings when calling modules
-$PSDefaultParameterValues = Get-GlobalDefaultsFromJsonFiles $MyInvocation -Verbose:$VerbosePreference
+$PSDefaultParameterValues = Get-GlobalDefaultsFromJsonFiles($MyInvocation)
 
 #endregion
 
 Msg "Start Execution"
 
-Write-Verbose "Script is in $scriptPath"
+#Show JSON file message if -Verbose was issued as argument
+Write-Verbose $Messaage
 
-if ($pscmdlet.ShouldProcess("ActiveCode", "Run Code")) {
-    #Put your commands/code here...
+Msg "Show module help in verbose mode?"
+
+Get-ModuleHelp -Name PSJumpStart
+
+if (!$NoRecurse) {
+    #Simple nested test
+    . $MyInvocation.MyCommand -Message "This will NOT show if parameter -Verbose is used for the script. BUT it will if Verbose=$true is used in a JSON file." -NoRecurse
 }
 
-#Show any errors (but not variable not found)
-if ($Error -ne $null) { foreach ($err in $Error) {if ($err -notmatch "Cannot find a variable with the name") {
-    Write-Verbose "Err: - `n$err `n       $($err.ScriptStackTrace) `n`n$($err.InvocationInfo.PositionMessage)`n`n"
-}}}
+#Get-ModuleHelp -Available
 
 Msg "End Execution"

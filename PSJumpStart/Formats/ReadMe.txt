@@ -1,0 +1,1 @@
+All files named *Format.ps1xml will be loaded from this folder at the script location THEN the files not found there will be loaded from here.

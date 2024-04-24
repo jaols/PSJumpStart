@@ -31,25 +31,20 @@ function Get-GlobalDefaultsFromJsonFiles {
             if (Test-Path "$settingsFile") {            
                 Write-Verbose "Get-GlobalDefaultValues:[$settingsFile]"
 
-                $DefaultParamters = Get-Content -Path $settingsFile -Encoding UTF8 | ConvertFrom-Json
+                $DefaultParamters = Get-Content -Path $settingsFile -Encoding UTF8 | ConvertFrom-Json | Set-ValuesFromExpressions
 
-                ForEach($prop in $DefaultParamters | Get-Member -MemberType NoteProperty) {
+                ForEach($property in $DefaultParamters.psobject.properties.name) {
 
-                    if (($prop.Name).IndexOf(':') -ge 0) {                        
-                        $key=$prop.Name
-                        $Variable = $key.Split(':')[1]
+                    if ($property.IndexOf(':') -ge 0) {                                                
+                        $Variable = $property.Split(':')[1]
 
-                        if (!$result.ContainsKey($key) -and -not $CallerInvocation.BoundParameters[$Variable].IsPresent) {
+                        #We do not load default values if it exists among the BoundParameters
+                        if (!$result.ContainsKey($property) -and -not $CallerInvocation.BoundParameters[$Variable].IsPresent) {
                             try {
-                                $value = $DefaultParamters.($prop.Name)
-                                if ($value.GetType().Name -eq "String" -and $value.SubString(0,1) -eq '(') {
-                                    $result.Add($key,(Invoke-Expression -Command $value))
-                                } else {
-                                    $result.Add($key,$value)
-                                }
+                                $result.Add($property,$DefaultParamters.($property))
                             } catch {
                                 $ex = $PSItem
-                                $ex.ErrorDetails = "Err adding $key from $settingsFile. " + $PSItem.Exception.Message
+                                $ex.ErrorDetails = "Err adding $property from $settingsFile. " + $PSItem.Exception.Message
                                 throw $ex
                             }
                         }

@@ -85,12 +85,13 @@ function Add-ScriptHeader {
                             [void]$newScript.Append($(Get-Content $FullName -Raw))                
                             $newScript.ToString() | Out-File $FullName -Force
                         } else {
-                            Write-Host $newScript.ToString()
+                            [ordered]@{Name=$FullName;Header=($newScript.ToString())}
                         }
     
                     }
                 } else {
-                    Write-Host "Skip signed file $FullName. Signed files need to be re-signed if changed."
+                    Write-Verbose "Skip signed file $FullName. Signed files need to be re-signed if changed."
+                    [ordered]@{Name=$FullName;Header=($newScript.ToString())}                    
                 }
             }
         }

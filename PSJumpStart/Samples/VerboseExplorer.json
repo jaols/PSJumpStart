@@ -1,0 +1,8 @@
+{
+"Message":"This message is found in a JSON file",
+"Get-LocalDefaultVariables:Verbose": true,
+"Get-GlobalDefaultsFromJsonFiles:Verbose": false,
+"Get-ModuleHelp:Verbose": true
+}
+
+

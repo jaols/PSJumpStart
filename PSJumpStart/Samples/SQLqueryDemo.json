@@ -1,0 +1,3 @@
+{
+"Invoke-SqlQuery:ConnectionString":"server='.';database='Northwind';trusted_connection=true;"
+}

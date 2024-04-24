@@ -1,17 +1,8 @@
- <#
-    .Synopsis
-       Template 
-    .DESCRIPTION
-       This template will load $PSDefaultParameterValues and the PSJumpStart module
-       and has support for Write-Verbose, -WhatIf and whatnot.
-    .Notes
-       Author date 
-       Changes
-#>
-[CmdletBinding(SupportsShouldProcess = $True)]
-param ()
+[CmdletBinding(SupportsShouldProcess = $False)]
+Param(    
+)
+#region Init
 
-#region local functions
 function Get-LocalDefaultVariables {
      <#
     .Synopsis
@@ -36,7 +27,7 @@ function Get-LocalDefaultVariables {
     foreach($settingsFile in (Get-SettingsFiles $CallerInvocation ".json")) {        
         if (Test-Path $settingsFile) {        
             Write-Verbose "$($MyInvocation.Mycommand) reading: [$settingsFile]"
-            $DefaultParamters = Get-Content -Path $settingsFile -Encoding UTF8 | ConvertFrom-Json | Set-ValuesFromExpressions
+            $DefaultParamters = Get-Content -Path $settingsFile -Encoding UTF8 | ConvertFrom-Json | Set-ValuesFromExpressions             
             ForEach($property in $DefaultParamters.psobject.properties.name) {
                 #Exclude PSDefaultParameterValues ("functionName:Variable":"Value")
                 if (($property).IndexOf(':') -eq -1) {
@@ -68,32 +59,45 @@ function Get-LocalDefaultVariables {
         }
     }
 }
-#endregion
 
-#region Init
-$scriptPath = Split-Path -Parent $MyInvocation.MyCommand.Definition
-if (-not (Get-Module PSJumpStart)) {
-   Import-Module PSJumpStart -Force -MinimumVersion 1.3.0
-}
 
-Get-LocalDefaultVariables $MyInvocation -defineNew
+#Load the module
+get-module PSJumpStart | Remove-Module;
+Import-Module PSJumpStart -MinimumVersion 1.3.0
+
+#Get Local variable default values from external JSON-files
+Get-LocalDefaultVariables($MyInvocation)
 
 #Get global deafult settings when calling modules
-$PSDefaultParameterValues = Get-GlobalDefaultsFromJsonFiles $MyInvocation -Verbose:$VerbosePreference
-
+$PSDefaultParameterValues = Get-GlobalDefaultsFromJsonFiles($MyInvocation)
 #endregion
 
-Msg "Start Execution"
+Msg "Start Execution"    
 
-Write-Verbose "Script is in $scriptPath"
+Msg "Test a stored procedure call"
 
-if ($pscmdlet.ShouldProcess("ActiveCode", "Run Code")) {
-    #Put your commands/code here...
+$query="Exec [dbo].[CustOrdersOrders] 'OCEAN'" 
+$data = Invoke-SqlQuery $query
+if ($data.Messages) {
+    Msg $data.Messages -Type Warning
+} else {
+    Msg ("Save result in " + $PSDefaultParameterValues["Out-DataTableToFile:FileName"])
+    $data.DataSet | Select-Object -ExpandProperty Tables | Out-DataTableToFile
 }
 
-#Show any errors (but not variable not found)
-if ($Error -ne $null) { foreach ($err in $Error) {if ($err -notmatch "Cannot find a variable with the name") {
-    Write-Verbose "Err: - `n$err `n       $($err.ScriptStackTrace) `n`n$($err.InvocationInfo.PositionMessage)`n`n"
-}}}
+Msg "SQL query with multiple output tables "
+
+$query="Select LastName,FirstName FROM [dbo].[Employees] 
+    Select * FROM [dbo].[Shippers] "
+        
+$data = Invoke-SqlQuery $query 
+if ($data.Messages) {
+    Msg $data.Messages -Type Warning
+} else {
+    $data.DataSet | Select-Object -ExpandProperty Tables | ForEach-Object {
+        Msg "Save to file $($_.TableName) Mixed double.csv"
+        Out-DataTableToFile -FileName "$($_.TableName) Mixed double.csv" -DataTable $_ 
+    }     
+}
 
 Msg "End Execution"

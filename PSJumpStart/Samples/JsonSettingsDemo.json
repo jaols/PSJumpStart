@@ -3,7 +3,7 @@
     "StringValue":" (Get-Process -Name \"PowerShell\" | Select-Object -ExpandProperty Id)",
     "RestApi":{
         "AccessUrl":"http://server/EE",
-        "AccessCredential":"(Get-AccessCredential -AccessName 'RestAPi')",
+        "AccessCredential":"(Get-AccessCredential -AccessName 'RestAPi' -CredFilesPath ($env:TEMP))",
         "UseMethod":"ooolala"
     }
 }

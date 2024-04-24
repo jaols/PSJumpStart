@@ -26,11 +26,9 @@ function Find-PSTemplate {
                 $Description = (Get-help $template.FullName -ShowWindow:$false).Description[0].Text
             }
             
-            $return = [PSCustomObject]@{
+            [PSCustomObject]@{
                 Name = $template.Name
                 Description = $Description
             }
-    
-            $return
         }
     }

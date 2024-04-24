@@ -66,34 +66,63 @@ param (
 )
 
 #region local functions 
-function GetLocalDefaultsFromDfpFiles($CallerInvocation) {        
-    #Load script default settings
-    foreach($settingsFile in (Get-SettingsFiles $CallerInvocation ".dfp")) {
-        Write-Verbose "GetLocalDefaultsFromDfpFiles: [$settingsFile]"
-        if (Test-Path $settingsFile) {
-            $settings = Get-Content $settingsFile
-            #Enumerate settingsfile rows
-            foreach($row in $settings) {
-                #Remarked lines are not processed
-                if (($row -match "=") -and ($row.Trim().SubString(0,1) -ne "#")) {
-                    $key = $row.Split('=')[0]
-                    $var = Get-Variable $key -ErrorAction SilentlyContinue
-                    if ($var -and !($var.Value))
-                    {
-                        try {
-                            $var.Value = Invoke-Expression $row.SubString($key.Length+1)
-                            Write-Verbose "GetLocalDefaultsFromDfpFiles: $key = $($var.Value)" 
-                        } Catch {
-                            $ex = $PSItem
-                            $ex.ErrorDetails = "Err adding $key from $settingsFile. " + $PSItem.Exception.Message
-                            throw $ex
-                        }
-                    }
-                }
-            }
-        }
-    }
+function Get-LocalDefaultVariables {
+	<#
+   .Synopsis
+	   Load default arguemts for this PS-file.
+   .DESCRIPTION
+	   Get setting files according to load order and set variables.
+	   Command prompt arguments will override any file settings
+   .PARAMETER CallerInvocation
+	   $MyInvocation of calling code session            
+   .PARAMETER defineNew
+	   Add ALL variables found in setting files
+   .PARAMETER overWriteExisting
+	   Turns the table for variable handling file content will override command line arguments                                
+   #>
+   [CmdletBinding(SupportsShouldProcess = $False)]
+   param(
+	   [parameter(Position=0,mandatory=$true)]
+	   $CallerInvocation,
+	   [switch]$defineNew,
+	   [switch]$overWriteExisting
+   )
+   foreach($settingsFile in (Get-SettingsFiles $CallerInvocation ".json")) {        
+	   if (Test-Path $settingsFile) {        
+		   Write-Verbose "$($MyInvocation.Mycommand) reading: [$settingsFile]"
+		   $DefaultParamters = Get-Content -Path $settingsFile -Encoding UTF8 | ConvertFrom-Json | Set-ValuesFromExpressions
+		   ForEach($property in $DefaultParamters.psobject.properties.name) {
+			   #Exclude PSDefaultParameterValues ("functionName:Variable":"Value")
+			   if (($property).IndexOf(':') -eq -1) {
+				   $var = Get-Variable $property -ErrorAction SilentlyContinue
+				   $value = $DefaultParamters.$property
+				   if (!$var) {
+					   if ($defineNew) {
+						   Write-Verbose "New Var: $property"
+						   $var = New-Variable -Name  $property -Value $value -Scope 1
+					   }
+				   } else {
+					   #We only overwrite non-set values if not forced
+					   if (!($var.Value) -or $overWriteExisting)
+					   {
+						   try {                
+							   Write-Verbose "Var: $property" 
+							   $var.Value = $value
+						   } Catch {
+							   $ex = $PSItem
+							   $ex.ErrorDetails = "Err adding $property from $settingsFile. " + $PSItem.Exception.Message
+							   throw $ex
+						   }
+					   }
+				   }
+			   }
+		   }
+	   } else {
+		   Write-Verbose "File not found: [$settingsFile]"
+	   }
+   }
 }
+
 function TimeFromInteger {
 	Param(
 	 [parameter(mandatory=$true)]
@@ -163,22 +192,22 @@ $reportFile = ($CallerInvocation.MyCommand.Definition -replace ".ps1","") + (Get
 if (-not (Get-Module ActiveDirectory)) {
     Import-Module ActiveDirectory
 }
-Import-Module PSJumpStart -Force
+Import-Module PSJumpStart -Force -MinimumVersion 1.3.0
 
 
-#Get Local variable default values from external DFP-files
-GetLocalDefaultsFromDfpFiles($MyInvocation)
+#Get Local variable default values from external JSON-files
+Get-LocalDefaultVariables $MyInvocation 
 
 #Get global deafult settings when calling modules
-$PSDefaultParameterValues = Get-GlobalDefaultsFromDfpFiles $MyInvocation -Verbose:$VerbosePreference
+$PSDefaultParameterValues = Get-GlobalDefaultsFromJsonFiles $MyInvocation 
 
 #endregion
 
 Msg "Start Execution"
 
-#Prevent disaster if dfp-file is missing
+#Prevent disaster if json-file is missing
 if ([string]::IsNullOrEmpty($monthsUnused) -or $monthsUnused -eq 0) {
-    Msg "Please create a dfp file for standard values."
+    Msg "Please create a json file for standard values."
     $monthsUnused = 200
 }
 #Get ADserver to run ALL operations

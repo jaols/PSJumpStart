@@ -50,7 +50,7 @@ function Get-SettingsFiles {
             ($CallerInvocation.MyCommand.Definition -replace ".ps1","") + "$extension"
             "$globalLocation\$($Env:COMPUTERNAME)$extension"
             "$globalLocation\$LogonContext$extension"
-        )
+        ) | Select-Object -Unique
     
         #Add module specific setting xml-files
         Get-Module | Select-Object -ExpandProperty Name | ForEach-Object {

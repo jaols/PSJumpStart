@@ -1,3 +1,9 @@
+
+#enable verbose messaging in the psm1 file
+if ($MyInvocation.line -match "-verbose") {
+    $VerbosePreference = [System.Management.Automation.ActionPreference]::Continue
+}
+
 #Get Local lib function script folder OR current folder
 $LocalLibPath=$MyInvocation.PSScriptRoot
 if ([string]::IsNullOrEmpty($LocalLibPath)) {    
@@ -10,8 +16,23 @@ $AddTypesDlls = @(Get-ChildItem -Path $LocalLibPath\LocalLib\*.dll -ErrorAction 
 $AddTypesDlls += @(Get-ChildItem -Path $PSScriptRoot\LocalLib\*.dll -Exclude ($AddTypesDlls | Select-Object -ExpandProperty Name)  -ErrorAction SilentlyContinue)
 
 if ($AddTypesDlls) {
-    Add-Type -Path ($AddTypesDlls | Select-Object -ExpandProperty FullName)
+    Add-Type -Path ($AddTypesDlls | Select-Object -ExpandProperty FullName) -Verbose:$VerbosePreference
 }
+
+#Get Local TypeData files
+$TypeData = @(Get-ChildItem -Path $LocalLibPath\TypeData\*.ps1xml -ErrorAction SilentlyContinue)
+$TypeData += @(Get-ChildItem -Path $PSScriptRoot\TypeData\*.ps1xml -ErrorAction SilentlyContinue -Exclude ($TypeData | Select-Object -ExpandProperty Name))
+if ($TypeData) {
+    Update-TypeData -PrependPath $TypeData -Verbose:$VerbosePreference
+}
+
+#Get Local Formats files
+$FormatData = @(Get-ChildItem -Path $LocalLibPath\Formats\*Format.ps1xml -ErrorAction SilentlyContinue)
+$FormatData += @(Get-ChildItem -Path $PSScriptRoot\Formats\*Format.ps1xml -ErrorAction SilentlyContinue -Exclude ($FormatData | Select-Object -ExpandProperty Name))
+if ($FormatData) {
+    Update-FormatData -PrependPath $FormatData -Verbose:$VerbosePreference
+}
+
 
 #Get PSJumpStart function files
 $FunctionLib = @(Get-ChildItem -Path $PSScriptRoot\Functions\*.ps1 -ErrorAction SilentlyContinue)
@@ -56,75 +77,3 @@ foreach($Import in $LocalLib) {
 
 #Export-ModuleMember -Function $functionNames
 Export-ModuleMember -Function *
-
-#region useless code?
-function IsVerbose {
-[CmdletBinding()]
-param() 
-   [bool](Write-Verbose ([String]::Empty) 4>&1)
-}
-
-function verboseTest {
-[CmdletBinding()]
-param($message) 
-    Write-Verbose $message   
-    Write-Verbose $ExecutionContext.SessionState.Path 
-}
-
-
-#endregion
-
-#region Unused Code (for reading purposes only)
-
-#Get global defaults to use with $PSDefaultParameterValues
-#Returns a Hashtable to load into $PSDefaultParameterValues
-#The Defaults will be loaded accoring to priority:
-# User settings from userID-file in caller location or current location(?) is prio 1 
-# LogonDomain (or machine name) XML-file in Module location is Prio 2
-# Module name(s) settings is last in order.
-# 
-#function GetGlobalDefaultsFromXmlFiles($CallerInvocation) {
-#    $result = New-Object System.Management.Automation.DefaultParameterDictionary
-#        
-#    foreach($settingsFile in (Get-SettingsFiles $CallerInvocation ".xml")) {
-#        #Write-Host $settingsFile
-#        if (Test-Path "$settingsFile") {
-#            [xml]$settings = Get-Content $settingsFile
-#            foreach($node in $settings.FirstChild.ChildNodes) {
-#                $cmdLetName = $node.Name
-#                foreach($setting in $settings.FirstChild.$cmdLetName.ChildNodes) {
-#                    
-#                    #We cannot have a wildcard in the XML-file so we use the point. (cruddy solution?)
-#                    $key = ($cmdLetName).Replace('.','*') + ":" + $setting.Name
-#                    if (!$result.ContainsKey($key)) {
-#
-#                        try {
-#                            #Add value from XML (OR result from PS-code execution)
-#                            $result.Add($key,(Invoke-Expression $setting.InnerText))
-#                        } catch {
-#                            $ex = $PSItem
-#                            $ex.ErrorDetails = "Err adding $key from $settingsFile. " + $PSItem.Exception.Message
-#                            throw $ex
-#                        }                    
-#                    }
-#                }
-#            }
-#        }
-#    }
-#
-#    #Return Parameter Dictionary 
-#    [System.Management.Automation.DefaultParameterDictionary]$result
-#}
-
-#These will only return the modules path no matter what!
-#function Get-CallerLocation {
-#    Split-Path $script:MyInvocation.MyCommand.Path -Parent
-#    Split-Path -Leaf $MyInvocation.PSCommandPath  
-#}
-#
-#function InternalModuleTest {
-#    Get-CallerLocation
-#}
-#
-
-#endregion

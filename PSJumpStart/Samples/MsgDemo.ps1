@@ -1,15 +1,5 @@
- <#
-    .Synopsis
-       Template 
-    .DESCRIPTION
-       This template will load $PSDefaultParameterValues and the PSJumpStart module
-       and has support for Write-Verbose, -WhatIf and whatnot.
-    .Notes
-       Author date 
-       Changes
-#>
-[CmdletBinding(SupportsShouldProcess = $True)]
-param ()
+[CmdletBinding()]
+Param()
 
 #region local functions
 function Get-LocalDefaultVariables {
@@ -36,7 +26,7 @@ function Get-LocalDefaultVariables {
     foreach($settingsFile in (Get-SettingsFiles $CallerInvocation ".json")) {        
         if (Test-Path $settingsFile) {        
             Write-Verbose "$($MyInvocation.Mycommand) reading: [$settingsFile]"
-            $DefaultParamters = Get-Content -Path $settingsFile -Encoding UTF8 | ConvertFrom-Json | Set-ValuesFromExpressions
+            $DefaultParamters = Get-Content -Path $settingsFile -Encoding UTF8 | ConvertFrom-Json | Set-ValuesFromExpressions             
             ForEach($property in $DefaultParamters.psobject.properties.name) {
                 #Exclude PSDefaultParameterValues ("functionName:Variable":"Value")
                 if (($property).IndexOf(':') -eq -1) {
@@ -68,32 +58,55 @@ function Get-LocalDefaultVariables {
         }
     }
 }
-#endregion
 
-#region Init
-$scriptPath = Split-Path -Parent $MyInvocation.MyCommand.Definition
-if (-not (Get-Module PSJumpStart)) {
-   Import-Module PSJumpStart -Force -MinimumVersion 1.3.0
+function NestedMessage($firstMessage) {
+    Msg $firstMessage    
+    NestedNestedMessage $firstMessage
+
+    #Return calc
+    3+8
 }
 
-Get-LocalDefaultVariables $MyInvocation -defineNew
-
-#Get global deafult settings when calling modules
-$PSDefaultParameterValues = Get-GlobalDefaultsFromJsonFiles $MyInvocation -Verbose:$VerbosePreference
+function NestedNestedMessage($secondLevelMessage) {    
+    Msg $secondLevelMessage
+}
 
 #endregion
+
+#Always re-load module
+get-module PSJumpStart | Remove-Module;
+
+#Load Module from script location 
+#Import-Module "$(Split-Path -parent $MyInvocation.MyCommand.Definition)\..\PSJumpStart.psm1" -Force
+
+#Standard import-module
+Import-Module PSJumpStart -MinimumVersion 1.3.0 -Force
+
+#Add script scope variable for json-file parsing!!
+$Script:ScriptInvocation = $MyInvocation 
+
+#Get Local variable default values from external DFP-files
+Get-LocalDefaultVariables $MyInvocation 
+
+#Get global deafult settings when calling modules
+$PSDefaultParameterValues = Get-GlobalDefaultsFromJsonFiles($MyInvocation)
 
 Msg "Start Execution"
 
-Write-Verbose "Script is in $scriptPath"
+#The verbose message will not be logged.
+Write-Verbose "Olala"
 
-if ($pscmdlet.ShouldProcess("ActiveCode", "Run Code")) {
-    #Put your commands/code here...
-}
+#If -useFileLog is active the error will be put in that as well
+Msg "Error has occurred. This messsage will be put in the eventlog. Regardless of other settings" "Error" -useEventLog
 
-#Show any errors (but not variable not found)
-if ($Error -ne $null) { foreach ($err in $Error) {if ($err -notmatch "Cannot find a variable with the name") {
-    Write-Verbose "Err: - `n$err `n       $($err.ScriptStackTrace) `n`n$($err.InvocationInfo.PositionMessage)`n`n"
-}}}
+Msg "This message will be handled accoring to dfp settings."
+
+$return=NestedMessage "This is a local nested function call"
+$return
+
+#Load external nested function
+. "$(Split-Path -parent $MyInvocation.MyCommand.Definition)\NestedMsgCall.ps1"
+FirstMsg "External function for message testing"
+
 
 Msg "End Execution"
