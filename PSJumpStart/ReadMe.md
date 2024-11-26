@@ -40,7 +40,7 @@ A folder with template files is also included to provide a set of starting point
 
 **PLEASE NOTE: versions 2.x.x is not compatible with 1.x.x versions**
 
-Du the following steps to update existing JumpStart 1.x.x environment to 2.x.x:
+Do the following steps to update existing JumpStart 1.x.x environment to 2.x.x:
 - Replace all `Msg:` settings with `Write-Message:` in `.json` files
 - Replace all  old `.dfp` files with `.json` files
 - Replace local function `Get-LocalDefaultVariables` with a new one from the 2.x.x templates and remove `$MyInvocation` from the call.
