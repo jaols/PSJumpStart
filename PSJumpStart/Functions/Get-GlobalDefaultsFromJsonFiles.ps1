@@ -11,7 +11,7 @@ function Get-GlobalDefaultsFromJsonFiles {
             - Module name(s) settings is last in order.
                         
         .PARAMETER CallerInvocation
-           The invocation object from the caller.
+           The invocation object from the caller needed for bound parameters retreival
     
         .Notes
            For information about PSDefaultParameterValues check these articles:
@@ -23,11 +23,10 @@ function Get-GlobalDefaultsFromJsonFiles {
     Param(
          [parameter(Position=0,mandatory=$true)]
          $CallerInvocation
-    ) 
-    
+    )    
         $result = New-Object System.Management.Automation.DefaultParameterDictionary
         
-        foreach($settingsFile in (Get-SettingsFiles $CallerInvocation ".json")) {                
+        foreach($settingsFile in (Get-SettingsFiles ".json")) {
             if (Test-Path "$settingsFile") {            
                 Write-Verbose "Get-GlobalDefaultValues:[$settingsFile]"
 

@@ -28,7 +28,7 @@ $scriptPath = Split-Path -Parent $MyInvocation.MyCommand.Definition
 
 #endregion
 
-Msg "Start Execution"
+Write-Host "Start Execution"
 
 Write-Verbose "Script is in $scriptPath"
 
@@ -36,4 +36,4 @@ if ($pscmdlet.ShouldProcess("ActiveCode", "Run Code")) {
     #Put your commands/code here...
 }
 
-Msg "End Execution"
+Write-Host "End Execution"

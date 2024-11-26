@@ -57,12 +57,10 @@ function Get-LocalDefaultVariables {
    #>
    [CmdletBinding(SupportsShouldProcess = $False)]
    param(
-       [parameter(Position=0,mandatory=$true)]
-       $CallerInvocation,
        [switch]$defineNew,
        [switch]$overWriteExisting
    )
-   foreach($settingsFile in (Get-SettingsFiles $CallerInvocation ".json")) {        
+   foreach($settingsFile in (Get-SettingsFiles  ".json")) {        
        if (Test-Path $settingsFile) {        
            Write-Verbose "$($MyInvocation.Mycommand) reading: [$settingsFile]"
            $DefaultParamters = Get-Content -Path $settingsFile -Encoding UTF8 | ConvertFrom-Json | Set-ValuesFromExpressions
@@ -102,17 +100,17 @@ function Get-LocalDefaultVariables {
 #region Init
 $scriptPath = Split-Path -Parent $MyInvocation.MyCommand.Definition
 
-Import-Module PSJumpStart -Force -MinimumVersion 1.3.0
+Import-Module PSJumpStart -Force -MinimumVersion 2.0.0
 #Import-Module "$scriptPath\..\PSJumpStart" -Force
 
 
-Get-LocalDefaultVariables $MyInvocation -defineNew -overWriteExisting
+Get-LocalDefaultVariables -defineNew -overWriteExisting
 
 #Get global deafult settings when calling modules
 $PSDefaultParameterValues = Get-GlobalDefaultsFromJsonFiles $MyInvocation -Verbose:$VerbosePreference
 
 #endregion
-Msg "Start Execution"
+Write-Message "Start Execution"
 
 $n=0
 $outFile = $env:TEMP + "\htmlTest"
@@ -131,7 +129,7 @@ $htmlCode = get-process | ConvertTo-Html -Property Name,Path,Company -As List -H
 $tmp = ($outFile + $n + ".html")
 $htmlCode | Out-File -FilePath $tmp -Force
 
-Msg "Use std components to create a HTML table (with all trimmings): $tmp"
+Write-Message "Use std components to create a HTML table (with all trimmings): $tmp"
 Invoke-Expression $tmp
 
 $n++
@@ -143,7 +141,7 @@ $n++
 $htmlCode = Get-Process | Select-Object Name,Path,Company | Get-HtmlAlternatingTable -Header "Process list"
 $tmp = ($outFile + $n + ".html")
 $htmlCode | Out-File -FilePath $tmp -Force
-Msg "Process list table PSJumpstart style: $tmp"
+Write-Message "Process list table PSJumpstart style: $tmp"
 Invoke-Expression $tmp
 
 $n++
@@ -154,7 +152,7 @@ $htmlCode = Get-HtmlAlternatingTable -InputData $colours -Header "List of colors
 $tmp = ($outFile + $n + ".html")
 $htmlCode | Out-File -FilePath $tmp -Force
 
-Msg "Simple array of strings table: $tmp"
+Write-Message "Simple array of strings table: $tmp"
 Invoke-Expression $tmp
 
 $n++
@@ -169,7 +167,7 @@ $htmlCode = Get-HtmlAlternatingTable -InputData $UserData -Header "User data"
 $tmp = ($outFile + $n + ".html")
 $htmlCode | Out-File -FilePath $tmp -Force
 
-Msg "Hashtable sample: $tmp"
+Write-Message "Hashtable sample: $tmp"
 Invoke-Expression $tmp
 
-Msg "End Execution"
+Write-Message "End Execution"

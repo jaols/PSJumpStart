@@ -10,24 +10,29 @@ function Get-SettingsFiles {
             - Caller settingsfile at caller location
             - LogonDoamin (or machine name) file at this PSM-mudules location
         
-        .PARAMETER CallerInvocation
-           The invocation object from the caller.
         .PARAMETER extension
            File name suffix to use.
     #>
     [CmdletBinding()]
     Param(
          [parameter(Position=0,mandatory=$true)]
-         $CallerInvocation,
-         [parameter(Position=1,mandatory=$true)]
          [string]$extension
     ) 
     
-        $globalLocation =  $PSScriptRoot
-        Write-Verbose "Global location: $globalLocation"
+        #$globalLocation = $PSScriptRoot
+        $globalLocation = Split-Path -parent (Get-Module PSJumpStart | Select-Object -ExpandProperty Path)
 
-        $callerLocation = Split-Path -parent $CallerInvocation.MyCommand.Definition
-        if ([string]::IsNullOrEmpty($callerLocation)) {            
+        Write-Verbose "Global location: $globalLocation"
+        
+        $callStack = Get-PSCallStack | Select-Object ScriptName
+        for ($i = $callStack.Count-1; $i -gt 0; $i--) {                        
+            if (![string]::IsNullOrEmpty($callStack[$i].ScriptName)) {                
+                $callerLocation=Split-Path -parent $callStack[$i].ScriptName
+                break                
+            }
+        }
+
+        if ([string]::IsNullOrEmpty($callerLocation)) {
             $callerLocation = $PWD.Path
         }        
         Write-Verbose "Caller location: $callerLocation"
@@ -47,7 +52,7 @@ function Get-SettingsFiles {
             "$callerLocation\$UserID$extension"
             "$callerLocation\$($Env:COMPUTERNAME)$extension"
             "$callerLocation\$LogonContext$extension"
-            ($CallerInvocation.MyCommand.Definition -replace ".ps1","") + "$extension"
+            ($callStack[$i].ScriptName -replace ".ps1","") + "$extension"
             "$globalLocation\$($Env:COMPUTERNAME)$extension"
             "$globalLocation\$LogonContext$extension"
         ) | Select-Object -Unique

@@ -4,22 +4,21 @@ Param(
 #region Init
 
 #Load the module
-get-module PSJumpStart | Remove-Module;
-Import-Module PSJumpStart -MinimumVersion 1.3.0
+Import-Module PSJumpStart -MinimumVersion 2.0.0 -Force
 
 #Get global deafult settings when calling modules
 $PSDefaultParameterValues = Get-GlobalDefaultsFromJsonFiles($MyInvocation)
 #endregion
 
-Msg "Start Execution"
+Write-Message "Start Execution"
 
-Msg "List All templates"
+Write-Message "List All templates"
 Find-PSTemplate | Out-Default
 
-Msg "List 'argument' templates"
+Write-Message "List 'argument' templates"
 Find-PSTemplate -Name "*arg*" | Out-Default
 
-Msg "Copy PSJumpStart templates to current location"
+Write-Message "Copy PSJumpStart templates to current location"
 #Copy-PSTemplate -Name "PSJumpStart*"
 
-Msg "End Execution"
+Write-Message "End Execution"

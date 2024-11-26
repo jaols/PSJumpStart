@@ -5,18 +5,16 @@
         Load PSJumpStart module AND create all variables as global ones.
         
 #>
-Import-Module PSJumpStart -Force -MinimumVersion 1.2.5
+Import-Module PSJumpStart -Force -MinimumVersion 2.0.0
 
 #region local functions
 function Get-LocalDefaultVariables {
     [CmdletBinding(SupportsShouldProcess = $False)]
     param(
-        [parameter(Position = 0, mandatory = $true)]
-        $CallerInvocation,
         [switch]$defineNew,
         [switch]$overWriteExisting
     )
-    foreach ($settingsFile in (Get-SettingsFiles $CallerInvocation ".json")) {        
+    foreach ($settingsFile in (Get-SettingsFiles  ".json")) {        
         if (Test-Path $settingsFile) {        
             Write-Verbose "Reading file: [$settingsFile]"
             $DefaultParamters = Get-Content -Path $settingsFile -Encoding UTF8 | ConvertFrom-Json
@@ -65,7 +63,7 @@ function Get-LocalDefaultVariables {
 
 #endregion
 
-Get-LocalDefaultVariables -CallerInvocation $MyInvocation -defineNew -Verbose
+Get-LocalDefaultVariables -defineNew -Verbose
 
 "Run from command promt: "
 '$PSDefaultParameterValues = Get-GlobalDefaultsFromJsonFiles $MyInvocation'

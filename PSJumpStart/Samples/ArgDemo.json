@@ -8,6 +8,5 @@
     "isint": 236,
     "pstring": "notepad",
     "sessionParam": "(Get-Process -Name 'notepad' -ErrorAction SilentlyContinue)",
-    "MissingMe": "This is not part of arguments but may be set anyway",
-    "Verbose": false
+    "MissingMe": "This is not part of arguments but may be set anyway by using -defineNew option in Get-LocalDefaultVariables"
 }

@@ -1,14 +1,16 @@
 
 #enable verbose messaging in the psm1 file
 if ($MyInvocation.line -match "-verbose") {
+    $orgVerbose = $VerbosePreference
     $VerbosePreference = [System.Management.Automation.ActionPreference]::Continue
 }
 
 #Get Local lib function script folder OR current folder
 $LocalLibPath=$MyInvocation.PSScriptRoot
-if ([string]::IsNullOrEmpty($LocalLibPath)) {    
-    $LocalLibPath=$PWD.Path    
+if ([string]::IsNullOrEmpty($LocalLibPath)) {            
+    $LocalLibPath=$PWD.Path
 } 
+Write-Verbose "Local loading path is: $LocalLibPath"
 
 #Get Local DLL files
 $AddTypesDlls = @(Get-ChildItem -Path $LocalLibPath\LocalLib\*.dll -ErrorAction SilentlyContinue)
@@ -16,6 +18,7 @@ $AddTypesDlls = @(Get-ChildItem -Path $LocalLibPath\LocalLib\*.dll -ErrorAction 
 $AddTypesDlls += @(Get-ChildItem -Path $PSScriptRoot\LocalLib\*.dll -Exclude ($AddTypesDlls | Select-Object -ExpandProperty Name)  -ErrorAction SilentlyContinue)
 
 if ($AddTypesDlls) {
+    #Write-Verbose "Local loading path is: $LocalLibPath"
     Add-Type -Path ($AddTypesDlls | Select-Object -ExpandProperty FullName) -Verbose:$VerbosePreference
 }
 
@@ -33,29 +36,17 @@ if ($FormatData) {
     Update-FormatData -PrependPath $FormatData -Verbose:$VerbosePreference
 }
 
-
-#Get PSJumpStart function files
-$FunctionLib = @(Get-ChildItem -Path $PSScriptRoot\Functions\*.ps1 -ErrorAction SilentlyContinue)
-#Get Local module lib function files
-$LocalModuleLib = @(Get-ChildItem -Path $PSScriptRoot\LocalLib\*.ps1 -ErrorAction SilentlyContinue)
 #Get functions from local lib in script folder
-$LocalLib = @(Get-ChildItem -Path $LocalLibPath\LocalLib\*.ps1 -ErrorAction SilentlyContinue)
-
-#$functionNames = @()
+$FunctionFiles = @(Get-ChildItem -Path $LocalLibPath\LocalLib\*.ps1 -ErrorAction SilentlyContinue)
+#Get Local module lib function files
+$FunctionFiles += @(Get-ChildItem -Path $PSScriptRoot\LocalLib\*.ps1 -ErrorAction SilentlyContinue -Exclude ($FunctionFiles | Select-Object -ExpandProperty Name))
+#Get PSJumpStart function files
+$FunctionFiles += @(Get-ChildItem -Path $PSScriptRoot\Functions\*.ps1 -ErrorAction SilentlyContinue -Exclude ($FunctionFiles | Select-Object -ExpandProperty Name))
 
 #Import PSJumpstart functions
-foreach($Import in $FunctionLib) {
+foreach($Import in $FunctionFiles) {
     try {
-        . $Import.FullName
-        #$functionNames += ($Import.Name).Replace(".ps1","")
-    }
-    catch {
-        Write-Error -Message "Failed to import function $($Import.FullName): $_"
-    }
-}
-#Import local lib functions (override any PSJumpstart modules)
-foreach($Import in $LocalModuleLib) {
-    try {
+        Write-Verbose "Load $($Import.FullName)"
         . $Import.FullName
         #$functionNames += ($Import.Name).Replace(".ps1","")
     }
@@ -64,16 +55,12 @@ foreach($Import in $LocalModuleLib) {
     }
 }
 
-#Import local lib functions (override any functions)
-foreach($Import in $LocalLib) {
-    try {        
-        . $Import.FullName
-        #$functionNames += ($Import.Name).Replace(".ps1","")
-    }
-    catch {
-        Write-Error -Message "Failed to import function $($Import.FullName): $_"
-    }
+#Reset Verbose mode
+if ($MyInvocation.line -match "-verbose") {
+    $VerbosePreference = $orgVerbose
 }
 
+$PSJumpStartModulePath = $PSScriptRoot
 #Export-ModuleMember -Function $functionNames
-Export-ModuleMember -Function *
+Export-ModuleMember -Function * -Alias * -Variable PSJumpStartModulePath
+

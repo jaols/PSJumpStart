@@ -1,9 +1,9 @@
 {
-"msg:Verbose": true,
-"msg:useEventLog": false,
-"msg:EventLogName":"PSJumpstart",
-"msg:useFileLog": true,
-"msg:logFile":"([System.IO.Path]::GetTempPath() + $ScriptInvocation.MyCommand.Name + '.' + (Get-Date -Format 'yyyy-MM') + '.Log')"
+"Write-Message:Verbose": true,
+"Write-Message:useEventLog": false,
+"Write-Message:EventLogName":"PSJumpstart",
+"Write-Message:useFileLog": true,
+"Write-Message:logFile":"([System.IO.Path]::GetTempPath() + $ScriptInvocation.MyCommand.Name + '.' + (Get-Date -Format 'yyyy-MM') + '.Log')"
 }
 
 

@@ -23,12 +23,10 @@ function Get-LocalDefaultVariables {
     #>
     [CmdletBinding(SupportsShouldProcess = $False)]
     param(
-        [parameter(Position=0,mandatory=$true)]
-        $CallerInvocation,
         [switch]$defineNew,
         [switch]$overWriteExisting
     )
-    foreach($settingsFile in (Get-SettingsFiles $CallerInvocation ".json")) {        
+    foreach($settingsFile in (Get-SettingsFiles  ".json")) {        
         if (Test-Path $settingsFile) {        
             Write-Verbose "$($MyInvocation.Mycommand) reading: [$settingsFile]"
             $DefaultParamters = Get-Content -Path $settingsFile -Encoding UTF8 | ConvertFrom-Json | Set-ValuesFromExpressions
@@ -65,30 +63,31 @@ function Get-LocalDefaultVariables {
 }
 #endregion
 
-Import-Module PSJumpStart -Force -MinimumVersion 1.3.0
+Import-Module PSJumpStart -Force -MinimumVersion 2.0.0
 
 #Retreive variables for this script (overwrite input arguments with -overWriteExisting).
-Get-LocalDefaultVariables -CallerInvocation $MyInvocation -Verbose -defineNew
+Get-LocalDefaultVariables -Verbose -defineNew
+
 #Get default paramters when calling functions (for example std-adserver)
 $PSDefaultParameterValues = Get-GlobalDefaultsFromJsonFiles $MyInvocation 
 
 #endregion
 
-Msg "Start Execution"
+Write-Message "Start Execution"
 
 $Arg1
-Msg "Used static default value for Arg1 (not recommended)"
+Write-Message "Used static default value for Arg1 (not recommended)"
 
 #Retreived from script json file
 $PSpids
-Msg "Used json file content as -defineNew option is in play"
+Write-Message "Used json file content as -defineNew option is in play"
 
-Msg "Space added to prevent code evaluation in [$StringValue]"
+Write-Message "Space added to prevent code evaluation in [$StringValue]"
 
 
-Msg ("The setting for RestApi Url is: [" + $RestApi.AccessUrl + "]")
-Msg ("The setting for RestApi Method is: [" + $RestApi.UseMethod + "]")
+Write-Message("The setting for RestApi Url is: [" + $RestApi.AccessUrl + "]")
+Write-Message("The setting for RestApi Method is: [" + $RestApi.UseMethod + "]")
 
 #Get-Variable | ConvertTo-Json | Msg
 
-Msg "End Execution"
+Write-Message "End Execution"

@@ -1,0 +1,28 @@
+{
+    "Environments":{
+      "Dev":{
+        "SQLserver":".",        
+        "Array":["apple","banana","((New-Guid).Guid)"]        
+      },
+      "Test":{
+        "SQLserver":"MyTestServer",        
+        "Array":["one","two","((New-Guid).Guid)"]
+      },
+      "Prod":{
+        "SQLserver":"ContosoSQL",        
+        "Array":["Billy","Jean","Jane"]
+      }
+    },
+    "Planning":{
+      "Past":{
+        "Time":"((Get-Date).AddYears(-10))"        
+      },
+      "Now":{
+        "Time":"(Get-Date)"
+      },
+      "Future":{
+        "Time":"((Get-Date).AddYears(10))"
+      }
+    }
+
+}

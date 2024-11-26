@@ -27,12 +27,10 @@ function Get-LocalDefaultVariables {
     #>
     [CmdletBinding(SupportsShouldProcess = $False)]
     param(
-        [parameter(Position=0,mandatory=$true)]
-        $CallerInvocation,
         [switch]$defineNew,
         [switch]$overWriteExisting
     )
-    foreach($settingsFile in (Get-SettingsFiles $CallerInvocation ".json")) {        
+    foreach($settingsFile in (Get-SettingsFiles  ".json")) {        
         if (Test-Path $settingsFile) {        
             Write-Verbose "$($MyInvocation.Mycommand) reading: [$settingsFile]"
             $DefaultParamters = Get-Content -Path $settingsFile -Encoding UTF8 | ConvertFrom-Json | Set-ValuesFromExpressions
@@ -72,25 +70,28 @@ function Get-LocalDefaultVariables {
 #region Init
 $scriptPath = Split-Path -Parent $MyInvocation.MyCommand.Definition
 if (-not (Get-Module PSJumpStart)) {
-   Import-Module PSJumpStart -Force -MinimumVersion 1.3.0
+   Import-Module PSJumpStart -Force -MinimumVersion 2.0.0
 }
 
-Get-LocalDefaultVariables $MyInvocation -defineNew -overWriteExisting
+Get-LocalDefaultVariables -defineNew -overWriteExisting
 
 #Get global deafult settings when calling modules
 $PSDefaultParameterValues = Get-GlobalDefaultsFromJsonFiles $MyInvocation -Verbose:$VerbosePreference
 
 #endregion
 
-Msg "Start Execution"
+Write-Message "Start Execution"
 
 #Cred files path is set in the json file for this test script
 $Credentials=Get-AccessCredential -AccessName "Office365"
 
-Msg ("User name 4 access: " + $Credentials.UserName)
+Write-Message("User name 4 access is: " + $Credentials.UserName)
 
-Msg ("Credential was/is saved here " + $PSDefaultParameterValues["Get-AccessCredential:CredFilesPath"] + ":")
+Write-Message("Credential was/is saved here " + $PSDefaultParameterValues["Get-AccessCredential:CredFilesPath"] + ":")
 
-Msg (Get-ChildItem -Path ($PSDefaultParameterValues["Get-AccessCredential:CredFilesPath"] + "\" + $env:ComputerName + "*.xml"))
+Write-Message("Cred file(s) list:" + (Get-ChildItem -Path ($PSDefaultParameterValues["Get-AccessCredential:CredFilesPath"] + "\" + $env:ComputerName + "*.xml")))
 
-Msg "End Execution"
+#Always update (demo purpose)
+$Credentials=Get-AccessCredential -AccessName "TheWorld" -renew
+
+Write-Message "End Execution"

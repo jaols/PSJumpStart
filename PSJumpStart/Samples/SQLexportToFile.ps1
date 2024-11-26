@@ -19,12 +19,10 @@ function Get-LocalDefaultVariables {
     #>
     [CmdletBinding(SupportsShouldProcess = $False)]
     param(
-        [parameter(Position=0,mandatory=$true)]
-        $CallerInvocation,
         [switch]$defineNew,
         [switch]$overWriteExisting
     )
-    foreach($settingsFile in (Get-SettingsFiles $CallerInvocation ".json")) {        
+    foreach($settingsFile in (Get-SettingsFiles  ".json")) {        
         if (Test-Path $settingsFile) {        
             Write-Verbose "$($MyInvocation.Mycommand) reading: [$settingsFile]"
             $DefaultParamters = Get-Content -Path $settingsFile -Encoding UTF8 | ConvertFrom-Json | Set-ValuesFromExpressions             
@@ -63,41 +61,41 @@ function Get-LocalDefaultVariables {
 
 #Load the module
 get-module PSJumpStart | Remove-Module;
-Import-Module PSJumpStart -MinimumVersion 1.3.0
+Import-Module PSJumpStart -MinimumVersion 2.0.0
 
 #Get Local variable default values from external JSON-files
-Get-LocalDefaultVariables($MyInvocation)
+Get-LocalDefaultVariables
 
 #Get global deafult settings when calling modules
 $PSDefaultParameterValues = Get-GlobalDefaultsFromJsonFiles($MyInvocation)
 #endregion
 
-Msg "Start Execution"    
+Write-Message "Start Execution"    
 
-Msg "Test a stored procedure call"
+Write-Message "Test a stored procedure call"
 
 $query="Exec [dbo].[CustOrdersOrders] 'OCEAN'" 
 $data = Invoke-SqlQuery $query
 if ($data.Messages) {
-    Msg $data.Messages -Type Warning
+    Write-Message$data.Messages -Type Warning
 } else {
-    Msg ("Save result in " + $PSDefaultParameterValues["Out-DataTableToFile:FileName"])
+    Write-Message("Save result in " + $PSDefaultParameterValues["Out-DataTableToFile:FileName"])
     $data.DataSet | Select-Object -ExpandProperty Tables | Out-DataTableToFile
 }
 
-Msg "SQL query with multiple output tables "
+Write-Message "SQL query with multiple output tables "
 
 $query="Select LastName,FirstName FROM [dbo].[Employees] 
     Select * FROM [dbo].[Shippers] "
         
 $data = Invoke-SqlQuery $query 
 if ($data.Messages) {
-    Msg $data.Messages -Type Warning
+    Write-Message$data.Messages -Type Warning
 } else {
     $data.DataSet | Select-Object -ExpandProperty Tables | ForEach-Object {
-        Msg "Save to file $($_.TableName) Mixed double.csv"
+        Write-Message "Save to file $($_.TableName) Mixed double.csv"
         Out-DataTableToFile -FileName "$($_.TableName) Mixed double.csv" -DataTable $_ 
     }     
 }
 
-Msg "End Execution"
+Write-Message "End Execution"

@@ -2,7 +2,7 @@ BeforeAll {
     Import-Module "$PSScriptRoot/../PSJumpstart.psd1" -Force        
     $samplesFolder="$PSScriptRoot/../Samples"
     $tempFolder = [System.IO.Path]::GetTempPath() + "_Tests" + $([Guid]::NewGuid())
-    md $tempFolder
+    mkdir $tempFolder
     Copy-Item -Path "$samplesFolder\*.*" -Destination $tempFolder -Container
 }
 
@@ -38,5 +38,5 @@ Describe "Add-ScriptHeader" -Tag "Add-ScriptHeader" {
 
 AfterAll { 
     #Cleanup file system items
-    rd $tempFolder -Recurse -Force
+    Remove-Item $tempFolder -Recurse -Force
 }

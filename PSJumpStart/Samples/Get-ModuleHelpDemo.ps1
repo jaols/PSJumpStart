@@ -1,8 +1,17 @@
-[CmdletBinding(SupportsShouldProcess = $True)]
-Param(    
+ <#
+.Synopsis
+    DemoCode
+.DESCRIPTION
+    DemoCode
+.Notes
+    Author: Jack    
+#>
+[CmdletBinding(SupportsShouldProcess = $False)]
+param (
 )
+
 #region Init
-#region local functions
+#region local functions 
 function Get-LocalDefaultVariables {
      <#
     .Synopsis
@@ -22,10 +31,10 @@ function Get-LocalDefaultVariables {
         [switch]$defineNew,
         [switch]$overWriteExisting
     )
-    foreach($settingsFile in (Get-SettingsFiles  ".json")) {        
+    foreach($settingsFile in (Get-SettingsFiles ".json")) {        
         if (Test-Path $settingsFile) {        
             Write-Verbose "$($MyInvocation.Mycommand) reading: [$settingsFile]"
-            $DefaultParamters = Get-Content -Path $settingsFile -Encoding UTF8 | ConvertFrom-Json | Set-ValuesFromExpressions             
+            $DefaultParamters = Get-Content -Path $settingsFile -Encoding UTF8 | ConvertFrom-Json | Set-ValuesFromExpressions
             ForEach($property in $DefaultParamters.psobject.properties.name) {
                 #Exclude PSDefaultParameterValues ("functionName:Variable":"Value")
                 if (($property).IndexOf(':') -eq -1) {
@@ -57,60 +66,46 @@ function Get-LocalDefaultVariables {
         }
     }
 }
-
-function dumpDBresult($dbResult) {
-    #Show any query result messages from the SQL-execution (error in SQL syntax)
-    if ($dbResult.Messages) {
-        Write-Message("Messages from Query: " + $dbResult.Messages)
-    } 
-
-    Msg("Number of tables: " + $dbResult.DataSet.Tables.Count)
-    ForEach($table in $dbResult.DataSet.Tables) {
-        $n++
-        Msg("Table $n contains " + $table.Rows.Count + " rows.")
-        $names = ""
-        ForEach($column in $table.Columns) {
-            $names += "[" + $column.ColumnName + "]"
-        }
-        Write-Message "and has these columns $names"
-    }
-    
-}
-
 #endregion
 
-#Load the module
-get-module PSJumpStart | Remove-Module;
-Import-Module PSJumpStart -MinimumVersion 2.0.0
+$scriptPath = Split-Path -Parent $MyInvocation.MyCommand.Definition
+#if (-not (Get-Module PSJumpStart)) {
+    Import-Module PSJumpStart -Force -MinimumVersion 2.0.0
+#}
 
-#Get Local variable default values from external DFP-files
+#Get Local variable default values from external JSON-files
 Get-LocalDefaultVariables
 
 #Get global deafult settings when calling modules
-$PSDefaultParameterValues = Get-GlobalDefaultsFromJsonFiles($MyInvocation)
+$PSDefaultParameterValues = Get-GlobalDefaultsFromJsonFiles $MyInvocation 
+
 #endregion
 
+$Error.Clear()
+Write-Message "Start Execution"
 
-Write-Message "Start Execution"    
+Write-Message "List imported modules"
+Write-Message "====================="
+Get-ModuleHelp | Format-Table
 
-Write-Message "Test a stored procedure call"
+Write-Message "List available Modules"
+Write-Message "======================"
+Get-ModuleHelp -ListAvailable | Format-Table
 
-$query="Exec [dbo].[CustOrdersOrders] 'OCEAN'"
-$res = Invoke-SqlQuery $query
-dumpDBresult $res
+Write-Message "Search ALL available modules for commands containing 'address' and show where they are"
+Write-Message "======================================================================================"
+Get-ModuleHelp -ListAvailable -CommandName "*address*" | Select-Object Name,ModuleName,ModulePath | Format-Table
 
-Write-Message "Test SQL query with double table result"
+Write-Message "Get all help commands from installed modules"
+Write-Message "============================================"
+Get-ModuleHelp -CommandName "*Help*"
 
-$query="Print 'Hello world' 
-    Select LastName,FirstName FROM [dbo].[Employees] 
-    Select * FROM [dbo].[Shippers] "
-        
-dumpDBresult (Invoke-SqlQuery $query) 
-
-Write-Message "Run ERROR query"
-$query = "Select Whatever from NoWay"
-$res = Invoke-SqlQuery $query
-dumpDBresult $res
-
+#Show any errors (but not variable not found OR the -SilentlyContinue GetAlias command)
+if ($Error -ne $null) { foreach ($err in $Error) {
+    if ($err -notmatch "Cannot find a variable with the name" -and 
+        $err.FullyQualifiedErrorId -ne "ItemNotFoundException,Microsoft.PowerShell.Commands.GetAliasCommand") {
+            Write-Message "`n$err `n       $($err.ScriptStackTrace) `n`n$($err.InvocationInfo.PositionMessage)`n`n" -Type Warning
+    }
+}}
 
 Write-Message "End Execution"

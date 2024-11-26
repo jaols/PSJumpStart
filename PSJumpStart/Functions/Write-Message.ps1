@@ -1,4 +1,4 @@
-function Msg {
+function Write-Message {
     <#
         .Synopsis
            Main output function.
@@ -22,23 +22,24 @@ function Msg {
             Target folder for log file. If omitted the script path is used.
     
         .EXAMPLE
-           Msg "The secret is OUT"
+           Write-Message "The secret is OUT"
     
            Writes "The secret is OUT" to std-out as "INFORMATION" message
         .EXAMPLE
-           Msg "This was NO good" "ERROR"
+           Write-Message "This was NO good" "ERROR"
     
            Writes the message to std-error
         .EXAMPLE
-           Msg "This was NO good" "ERROR" -useEventLog
+           Write-Message "This was NO good" "ERROR" -useEventLog
     
            Writes message to console (Write-Host) and to the windows Eventlog.
         .EXAMPLE
-           Msg "Write this to file" -useFileLog
+           Write-Message "Write this to file" -useFileLog
     
            Writes message to console (Write-Host) and to the standard log file name.
         #>
-    [CmdletBinding()]
+    [CmdletBinding(DefaultParameterSetName = "Message")]
+    [Alias("Msg")]
     Param(
         [parameter(Position = 0, mandatory = $true, ValueFromPipeline=$true)]
         $Message,
@@ -46,23 +47,35 @@ function Msg {
         [string]$Type = "INFORMATION",        
         [switch]$useEventLog,
         [string]$EventLogName = "Application",
-        [int]$EventId = 4695,     
+        [int]$EventId = 4695,
         [switch]$useFileLog,
         [string]$logFile,
-        [string]$logFilePath    
+        [string]$logFilePath
     )
-        
-    $scriptName = Split-Path -Leaf $MyInvocation.PSCommandPath  
+    
+    #Retreive caller script/commnad name and location
+    $callStack = Get-PSCallStack | Select-Object ScriptName
+    for ($i = $callStack.Count-1; $i -gt 0; $i--) {                        
+        if (![string]::IsNullOrEmpty($callStack[$i].ScriptName)) {
+            $callerLocation=Split-Path -parent $callStack[$i].ScriptName
+            $callerName=Split-Path -leaf $callStack[$i].ScriptName
+            break
+        }
+    }
+
+    #Use name from $MyInvocation
+    #$callerName = Split-Path -Leaf $MyInvocation.PSCommandPath  
+    
     $logstring = (Get-Date).ToString() + ";" + $Message
         
     if ($useEventLog.IsPresent) {
-        Write-Verbose "Msg:Use eventlog"
+        Write-Verbose "Write-Message:Use eventlog"
         #We will get an error if not running as administrator
         try {
-            if (![system.diagnostics.eventlog]::SourceExists($scriptName)) {
-                [system.diagnostics.EventLog]::CreateEventSource($scriptName, $EventLogName)
+            if (![system.diagnostics.eventlog]::SourceExists($callerName)) {
+                [system.diagnostics.EventLog]::CreateEventSource($callerName, $EventLogName)
             }
-            Write-EventLog -LogName $EventLogName -Source $scriptName -EntryType $Type -Message $Message -EventId $EventId -Category 0
+            Write-EventLog -LogName $EventLogName -Source $callerName -EntryType $Type -Message $Message -EventId $EventId -Category 0
         }
         catch {
             Write-Error "ERROR;Run as ADMINISTRATOR;$($PSItem.Exception.Message)"
@@ -70,14 +83,14 @@ function Msg {
     }
     
     if ($useFileLog.IsPresent) {
-        Write-Verbose "Msg:Use logfile"
+        Write-Verbose "Write-Message:Use logfile"
                 
         if ([string]::IsNullOrEmpty($logFilePath)) {
-            $logFilePath = $MyInvocation.PSCommandPath | Split-Path -Parent
+            $logFilePath = $callerLocation
         }
                             
         if ([string]::IsNullOrEmpty($logFile)) {
-            $logfile = $logFilePath + "\" + ($MyInvocation.PSCommandPath | Split-Path -Leaf) + "." + (Get-Date -Format 'yyyy-MM') + ".log"
+            $logfile = $logFilePath + "\" + $callerName + "." + (Get-Date -Format 'yyyy-MM') + ".log"
         }
         elseif (!$logFile.Contains("\")) {
             $logfile = $logFilePath + "\" + $logfile
@@ -96,13 +109,12 @@ function Msg {
     }
     else {
 
-        Write-Verbose "Msg:Use std-Out/std-Err"
+        Write-Verbose "Write-Message:Use std-Out/std-Err"
         if ($Type -match "Err") {
             Write-Error "$Type;$logstring"
-        }
-        else {
+        } else {
             Write-Output "$Type;$logstring"
         }
-    }        
+    }
 }
     

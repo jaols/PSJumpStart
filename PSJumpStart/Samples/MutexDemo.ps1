@@ -21,12 +21,10 @@ function Get-LocalDefaultVariables {
     #>
     [CmdletBinding(SupportsShouldProcess = $False)]
     param(
-        [parameter(Position=0,mandatory=$true)]
-        $CallerInvocation,
         [switch]$defineNew,
         [switch]$overWriteExisting
     )
-    foreach($settingsFile in (Get-SettingsFiles $CallerInvocation ".json")) {        
+    foreach($settingsFile in (Get-SettingsFiles  ".json")) {        
         if (Test-Path $settingsFile) {        
             Write-Verbose "$($MyInvocation.Mycommand) reading: [$settingsFile]"
             $DefaultParamters = Get-Content -Path $settingsFile -Encoding UTF8 | ConvertFrom-Json | Set-ValuesFromExpressions             
@@ -63,16 +61,17 @@ function Get-LocalDefaultVariables {
 }
 #endregion
 Remove-Module PSJumpStart
-Import-Module PSJumpStart -Force -MinimumVersion 1.3.0
+Import-Module PSJumpStart -Force -MinimumVersion 2.0.0
 
 #Retreive variables for this script (overwrite input arguments with -overWriteExisting).
-Get-LocalDefaultVariables -CallerInvocation $MyInvocation 
+Get-LocalDefaultVariables
+
 #Get default paramters when calling functions (for example std-adserver)
 $PSDefaultParameterValues = Get-GlobalDefaultsFromJsonFiles $MyInvocation 
 
 #endregion
 
-Msg "Session $NestedNum - Start Execution"
+Write-Message "Session $NestedNum - Start Execution"
 
 #NOTE: Start two PS-windows 4 better demo
 
@@ -80,26 +79,26 @@ Msg "Session $NestedNum - Start Execution"
 $MutexId = "de9a280d-ce61-4eca-adba-70332a68e065"
 
 #Create or wait for mutex
-Msg "Session $NestedNum - Wait for mutex release"
+Write-Message "Session $NestedNum - Wait for mutex release"
 $mutex = Wait-OnMutex $MutexId -WaitCycleCount 100 -WaitTimeMilliseconds 1000
 
 
 #region Sensitive code!! May only run one instance at a time!
 if ($NestedNum -lt 1) {    
     for ($i = 1; $i -lt 6; $i++) {                
-        Msg "Session $NestedNum - Call myself with argument -NestedNum  $i"
+        Write-Message "Session $NestedNum - Call myself with argument -NestedNum  $i"
         & $MyInvocation.MyCommand.Definition -NestedNum $i
     }
 } else {
-    Msg "Session $NestedNum - wait 3 seconds"
+    Write-Message "Session $NestedNum - wait 3 seconds"
     Start-Sleep -Seconds 3
 }
 #endregion
 
 
-Msg "Session $NestedNum - Release Mutex and cleanup last error"
+Write-Message "Session $NestedNum - Release Mutex and cleanup last error"
 Unlock-Mutex -MutexId $MutexId
 $Error.RemoveAt(0)
 
 
-Msg "Session $NestedNum - End Execution"
+Write-Message "Session $NestedNum - End Execution"

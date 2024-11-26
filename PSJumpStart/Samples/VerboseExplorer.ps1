@@ -1,6 +1,6 @@
 [CmdletBinding(SupportsShouldProcess = $False)]
 param (          
-   [string]$Message,
+   [string]$MyMessage,
    [switch]$NoRecurse
 )
 
@@ -22,31 +22,32 @@ function Get-LocalDefaultVariables {
     #>
     [CmdletBinding(SupportsShouldProcess = $False)]
     param(
-        [parameter(Position=0,mandatory=$true)]
-        $CallerInvocation,
         [switch]$defineNew,
         [switch]$overWriteExisting
     )
-    foreach($settingsFile in (Get-SettingsFiles $CallerInvocation ".json")) {        
+    foreach($settingsFile in (Get-SettingsFiles  ".json")) {        
         if (Test-Path $settingsFile) {        
             Write-Verbose "$($MyInvocation.Mycommand) reading: [$settingsFile]"
             $DefaultParamters = Get-Content -Path $settingsFile -Encoding UTF8 | ConvertFrom-Json | Set-ValuesFromExpressions
             ForEach($property in $DefaultParamters.psobject.properties.name) {
                 #Exclude PSDefaultParameterValues ("functionName:Variable":"Value")
-                if (($property).IndexOf(':') -eq -1) {
+                if (($property).IndexOf(':') -eq -1) {                    
                     $var = Get-Variable $property -ErrorAction SilentlyContinue
                     $value = $DefaultParamters.$property
                     if (!$var) {
+                        Write-Verbose "Var not found: $property"
                         if ($defineNew) {
                             Write-Verbose "New Var: $property"
                             $var = New-Variable -Name  $property -Value $value -Scope 1
                         }
                     } else {
+                        Write-Verbose ("Found var: $property -> " + $value)
+                        
                         #We only overwrite non-set values if not forced
                         if (!($var.Value) -or $overWriteExisting)
                         {
-                            try {                
-                                Write-Verbose "Var: $property" 
+                            try {
+                                Write-Verbose ("Set var: $property=" + $value)
                                 $var.Value = $value
                             } Catch {
                                 $ex = $PSItem
@@ -66,31 +67,30 @@ function Get-LocalDefaultVariables {
 
 #get-module PSJumpStart | Remove-Module;
 
-Import-Module PSJumpStart -MinimumVersion 1.3.0 -Force
+Import-Module PSJumpStart -MinimumVersion 2.0.0 -Force
 
 #Get Local variable default values from external Json-files
-Get-LocalDefaultVariables $MyInvocation -defineNew
-
+Get-LocalDefaultVariables -defineNew
 
 #Get global deafult settings when calling modules
 $PSDefaultParameterValues = Get-GlobalDefaultsFromJsonFiles($MyInvocation)
 
 #endregion
 
-Msg "Start Execution"
+Write-Message "Start Execution"
 
-#Show JSON file message if -Verbose was issued as argument
-Write-Verbose $Messaage
+#Show JSON file message OR argument
+Write-Message "Is this? $MyMessage"
 
-Msg "Show module help in verbose mode?"
+Write-Message "Show module help in verbose mode?"
 
 Get-ModuleHelp -Name PSJumpStart
 
 if (!$NoRecurse) {
     #Simple nested test
-    . $MyInvocation.MyCommand -Message "This will NOT show if parameter -Verbose is used for the script. BUT it will if Verbose=$true is used in a JSON file." -NoRecurse
+    . $MyInvocation.MyCommand -MyMessage "This message is passed as an argument" -NoRecurse
 }
 
 #Get-ModuleHelp -Available
 
-Msg "End Execution"
+Write-Message "End Execution"

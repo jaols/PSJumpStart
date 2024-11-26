@@ -28,12 +28,10 @@ function Get-LocalDefaultVariables {
     #>
     [CmdletBinding(SupportsShouldProcess = $False)]
     param(
-        [parameter(Position=0,mandatory=$true)]
-        $CallerInvocation,
         [switch]$defineNew,
         [switch]$overWriteExisting
     )
-    foreach($settingsFile in (Get-SettingsFiles $CallerInvocation ".json")) {        
+    foreach($settingsFile in (Get-SettingsFiles  ".json")) {        
         if (Test-Path $settingsFile) {        
             Write-Verbose "$($MyInvocation.Mycommand) reading: [$settingsFile]"
             $DefaultParamters = Get-Content -Path $settingsFile -Encoding UTF8 | ConvertFrom-Json | Set-ValuesFromExpressions            
@@ -69,74 +67,30 @@ function Get-LocalDefaultVariables {
     }
 }
 
-#Load default arguemts for this script.
-#Command prompt arguments will override file settings
-function GetLocalDefaultsFromDfpFiles($CallerInvocation) {        
-    #Load script default settings
-    foreach($settingsFile in (Get-SettingsFiles $CallerInvocation ".dfp")) {
-        Write-Verbose "File: [$settingsFile]"
-        if (Test-Path $settingsFile) {        
-            $settings = Get-Content $settingsFile
-            #Enumerate settingsfile rows
-            foreach($row in $settings) {
-                #Remarked lines are not processed
-                if (($row -match "=") -and ($row.Trim().SubString(0,1) -ne "#")) {
-                    $key = $row.Split('=')[0]                            
-                    $var = Get-Variable $key -ErrorAction SilentlyContinue
-                    if ($var -and !($var.Value))
-                    {
-                        try {                
-                            Write-Verbose "Var: $key" 
-                            $var.Value = Invoke-Expression $row.SubString($key.Length+1)
-                        } Catch {
-                            $ex = $PSItem
-                            $ex.ErrorDetails = "Err adding $key from $settingsFile. " + $PSItem.Exception.Message
-                            throw $ex
-                        }
-                    }
-                   #Write-Host "$($var.Value)"
-                }
-            }
-        }
-    }
-}
-
-get-module PSJumpStart | Remove-Module;
-
 Import-Module PSJumpStart -Force
 
-#Get Local variable default values from external DFP-files
-#GetLocalDefaultsFromDfpFiles($MyInvocation)
-
 #Get Local variable default values from external JSON-files
-Get-LocalDefaultVariables $MyInvocation -Verbose
-
-
-#Get global deafult settings when calling modules
-#$PSDefaultParameterValues = Get-GlobalDefaultsFromDfpFiles($MyInvocation)
+Get-LocalDefaultVariables -Verbose -defineNew
 
 $PSDefaultParameterValues = Get-GlobalDefaultsFromJsonFiles $MyInvocation -Verbose
 
-
 #endregion
 
-Msg "Start Execution"
+Write-Message "Start Execution"
 
+#Json file will have default values for theese arguments
 Write-Verbose "Value for One is $one"
-Msg ("Valuew for Two: " + $two)
+Write-Message("Valuew for Two: " + $two)
 
+#SessionParam default value is part of the json file.
 if ($sessionParam) {
-    Msg ("Notepad PID(s): " + $sessionParam.Id)
+    Write-Message("Notepad PID(s): " + $sessionParam.Id)
 } else {
-    Msg "No notepad is running" -Type Warning
+    Write-Message "No notepad is running" -Type Warning
 }
 
 #Should still be [int64]
 Write-Verbose "$($isint.GetType().FullName) ; $isint"
 
-#$Root = [ADSI]"LDAP://RootDSE"
-#$Root.rootDomainNamingContext
 
-#Get-PSSessionConfiguration
-
-Msg "End Execution"
+Write-Message "End Execution"

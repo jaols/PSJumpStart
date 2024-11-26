@@ -18,12 +18,10 @@ function Get-LocalDefaultVariables {
     #>
     [CmdletBinding(SupportsShouldProcess = $False)]
     param(
-        [parameter(Position=0,mandatory=$true)]
-        $CallerInvocation,
         [switch]$defineNew,
         [switch]$overWriteExisting
     )
-    foreach($settingsFile in (Get-SettingsFiles $CallerInvocation ".json")) {        
+    foreach($settingsFile in (Get-SettingsFiles  ".json")) {        
         if (Test-Path $settingsFile) {        
             Write-Verbose "$($MyInvocation.Mycommand) reading: [$settingsFile]"
             $DefaultParamters = Get-Content -Path $settingsFile -Encoding UTF8 | ConvertFrom-Json | Set-ValuesFromExpressions             
@@ -60,7 +58,7 @@ function Get-LocalDefaultVariables {
 }
 
 function NestedMessage($firstMessage) {
-    Msg $firstMessage    
+    Write-Message $firstMessage    
     NestedNestedMessage $firstMessage
 
     #Return calc
@@ -68,7 +66,7 @@ function NestedMessage($firstMessage) {
 }
 
 function NestedNestedMessage($secondLevelMessage) {    
-    Msg $secondLevelMessage
+    Write-Message $secondLevelMessage
 }
 
 #endregion
@@ -80,27 +78,27 @@ get-module PSJumpStart | Remove-Module;
 #Import-Module "$(Split-Path -parent $MyInvocation.MyCommand.Definition)\..\PSJumpStart.psm1" -Force
 
 #Standard import-module
-Import-Module PSJumpStart -MinimumVersion 1.3.0 -Force
-
-#Add script scope variable for json-file parsing!!
-$Script:ScriptInvocation = $MyInvocation 
+Import-Module PSJumpStart -MinimumVersion 2.0.0 -Force
 
 #Get Local variable default values from external DFP-files
-Get-LocalDefaultVariables $MyInvocation 
+Get-LocalDefaultVariables 
 
 #Get global deafult settings when calling modules
 $PSDefaultParameterValues = Get-GlobalDefaultsFromJsonFiles($MyInvocation)
 
-Msg "Start Execution"
+Write-Message "Start Execution"
+
+Write-Message ("Log file: " + $PSDefaultParameterValues["Write-Message:logFile"])
 
 #The verbose message will not be logged.
 Write-Verbose "Olala"
 
 #If -useFileLog is active the error will be put in that as well
-Msg "Error has occurred. This messsage will be put in the eventlog. Regardless of other settings" "Error" -useEventLog
+Write-Message "Error has occurred. This messsage will be put in the eventlog. Regardless of other settings" "Error" -useEventLog
 
-Msg "This message will be handled accoring to dfp settings."
+Write-Message "This message will be handled accoring to json settings."
 
+#Write-Message calls within main script functions are fine
 $return=NestedMessage "This is a local nested function call"
 $return
 
@@ -109,4 +107,4 @@ $return
 FirstMsg "External function for message testing"
 
 
-Msg "End Execution"
+Write-Message "End Execution"

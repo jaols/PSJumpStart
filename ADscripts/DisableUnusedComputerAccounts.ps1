@@ -72,22 +72,18 @@ function Get-LocalDefaultVariables {
 	   Load default arguemts for this PS-file.
    .DESCRIPTION
 	   Get setting files according to load order and set variables.
-	   Command prompt arguments will override any file settings
-   .PARAMETER CallerInvocation
-	   $MyInvocation of calling code session            
+	   Command prompt arguments will override any file settings.
    .PARAMETER defineNew
-	   Add ALL variables found in setting files
+	   Add ALL variables found in all setting files. This will get full configuration from all json files
    .PARAMETER overWriteExisting
-	   Turns the table for variable handling file content will override command line arguments                                
+	   Turns the table for variable handling making file content override command line arguments.
    #>
    [CmdletBinding(SupportsShouldProcess = $False)]
    param(
-	   [parameter(Position=0,mandatory=$true)]
-	   $CallerInvocation,
 	   [switch]$defineNew,
 	   [switch]$overWriteExisting
    )
-   foreach($settingsFile in (Get-SettingsFiles $CallerInvocation ".json")) {        
+   foreach($settingsFile in (Get-SettingsFiles  ".json")) {        
 	   if (Test-Path $settingsFile) {        
 		   Write-Verbose "$($MyInvocation.Mycommand) reading: [$settingsFile]"
 		   $DefaultParamters = Get-Content -Path $settingsFile -Encoding UTF8 | ConvertFrom-Json | Set-ValuesFromExpressions
@@ -192,11 +188,11 @@ $reportFile = ($CallerInvocation.MyCommand.Definition -replace ".ps1","") + (Get
 if (-not (Get-Module ActiveDirectory)) {
     Import-Module ActiveDirectory
 }
-Import-Module PSJumpStart -Force -MinimumVersion 1.3.0
+Import-Module PSJumpStart -Force -MinimumVersion 2.0.0
 
 
 #Get Local variable default values from external JSON-files
-Get-LocalDefaultVariables $MyInvocation 
+Get-LocalDefaultVariables
 
 #Get global deafult settings when calling modules
 $PSDefaultParameterValues = Get-GlobalDefaultsFromJsonFiles $MyInvocation 

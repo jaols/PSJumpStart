@@ -37,12 +37,11 @@ function localAppendValue($this,$key,$value) {
 #end region
 
 #Load the module
-get-module PSJumpStart | Remove-Module;
 Import-Module PSJumpStart -Force
 
-Msg "Start Execution"    
+Write-Message "Start Execution"    
 
-Msg "Create a std HashTable"
+Write-Message "Create a std HashTable"
 $hashis = @{
     "Apple"="Green"
     "Lemon"="Yellow"
@@ -50,34 +49,34 @@ $hashis = @{
     "MyNum" = 3
 }
 
-Msg "---------- Init ---------"
+Write-Message "---------- Init ---------"
 ShowHash $hashis
 
 localAppendValue $hashis "Banana" "Green"
 $hashis.AppendValue("MyNum",8)
 $hashis.Replace("Apple","Red")
 
-Msg "------ Changed --------"
+Write-Message "------ Changed --------"
 ShowHash $hashis
 
 
-Msg "------ Add hash to Hash --------"
+Write-Message "------ Add hash to Hash --------"
 $hashis.Add("SubHash",$hashis)
 ShowHash $hashis
 
 
-Msg "------ Append hash to key 'SubHash' --------"
+Write-Message "------ Append hash to key 'SubHash' --------"
 $hashis.AppendValue("SubHash",$hashis)
 ShowHash $hashis
 
-Msg "------ Object added --------"
+Write-Message "------ Object added --------"
 $hashis.Add("web",([net.WebRequest]::Create("https://www.powershellgallery.com")))
 ShowHash $hashis
 
 
-Msg "------ Object appended to key 'web' --------"
+Write-Message "------ Object appended to key 'web' --------"
 $hashis.AppendValue("web",(New-Object Net.WebClient))
 ShowHash $hashis
 
 
-Msg "End Execution"
+Write-Message "End Execution"

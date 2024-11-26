@@ -5,13 +5,13 @@
     + [Features and content](#features-and-content)
     + [Why?](#why)
   * [Practical usage of setting files](#practical-usage-of-setting-files)    
-    + [Using `json` files](#using-json-files)
-    + [Using `dfp` files](#using-dfp-files)
-    + [Arguments load order](#arguments-load-order)
+    + [The `json` file syntax](#the-json-file-syntax)    
+    + [Configuration files load order](#configuration-files-load-order)
+    + [The art of logging](#the-art-of-logging)
+    + [Using named environment settings](#using-named-environment-settings)
   * [Locally customized functions](#locally-customized-functions)
-  * [The art of logging](#the-art-of-logging)
-  * [Loading DLL files](#loading-dll-files)
-  * [How to debug](#how-to-debug)
+  * [Automatic loading of DLL files](#automatic-loading-dll-files)
+  * [Using `json` files for debugging](#using-json-files-for-debugging)
     + [Global debugging](#global-debugging)
     + [Specific script debugging](#specific-script-debugging)
     + [Function debugging](#function-debugging)
@@ -19,8 +19,9 @@
   * [Script signing](#script-signing)
   * [The Task Scheduler problem](#the-task-scheduler-problem)
   * [Down the rabbit hole](#down-the-rabbit-hole)
+    + [Script arguments and variable population](#script-arguments-and-variable-population)
     + [`$PSDefaultParameterValues`](#psdefaultparametervalues)
-    + [The `Msg` function](#the-msg-function)
+    + [The `Write-Message` function](#the-write-message-function)
     + [The birth of the `Get-AccessCredential` function](#the-birth-of-the-get-accesscredential-function)
     + [The `$CallerInvocation` story](#the-callerinvocation-story)
     + [`Hashtable` type add-on](#hashtable-type-add-on)
@@ -31,13 +32,26 @@
 
 ## Introduction
 
-The PowerShell PSJumpStart module is a multi-purpose module targeted to create an environment for running, creating and editing PowerShell scripts. The environment is highly customizable for different usages and the module comes with some simple but usefull start-up functions. Search the [PowerShell Gallery](https://www.powershellgallery.com/) or the internet to add functionallity or override included functions. See [Other repositories](#other-repositories) section for inspiration.
+The PowerShell PSJumpStart module is a multi-purpose module. It provides an environment and support for creating administative scripts as well as packaged solutions, for example [AdExportImport](https://github.com/jaols/ADExportImport). The environment is highly customizable for different usages and the module comes with some simple but usefull start-up functions and templates.
 
-A folder with template files are included to provide a set of files to jump start PowerShell programming.
+Search the [PowerShell Gallery](https://www.powershellgallery.com/) or the internet to add functionallity or override included functions. See [Locally customized functions](#locally-customized-functions) and [Other repositories](#other-repositories) section for inspiration.
+
+A folder with template files is also included to provide a set of starting points to jump start PowerShell programming.
+
+**PLEASE NOTE: versions 2.x.x is not compatible with 1.x.x versions**
+
+Du the following steps to update existing JumpStart 1.x.x environment to 2.x.x:
+- Replace all `Msg:` settings with `Write-Message:` in `.json` files
+- Replace all  old `.dfp` files with `.json` files
+- Replace local function `Get-LocalDefaultVariables` with a new one from the 2.x.x templates and remove `$MyInvocation` from the call.
+- Use `Import-Module PSJumpStart` with option `-MinimumVersion 2.0.0` in all main scripts
+- You can still use `Msg` as it is an alias for `Write-Message`
+
+I like to use [Visual Studio Code](https://code.visualstudio.com/) for these mass editing tasks.
 
 ### Features and content
 
-- One of the most useful features is the setting files solution. You can use either `.json` or `.dfp` files to populate variables and/or the standard PowerShell feature `$PSDefaultParameterValues`. The files are read in a preset order so you may have different defaults for different scenarios.
+- One of the most useful features is the setting files framework. You can use `.json` files to populate variables and/or the standard PowerShell feature `$PSDefaultParameterValues`. The files are read in a preset order so you may have different defaults for different scenarios.
 
 - The package contains a `Functions` folder and an empty customizable `LocalLib` folder for local usage found in the module folder. Functions in the local folder will override any existing functions in the `Functions` folder, so you can copy a function and improve it for local usage. The `LocalLib` feature also extends to the current running scripts folder. So you can have the same function name in different versions at each script folders `LocalLib` location. The correct set of function files will be loaded by the `Import-Module` call.
 
@@ -47,7 +61,7 @@ A folder with template files are included to provide a set of files to jump star
 
 - Any `Format.Ps1Xml` files found in any `Formats` folder will be loaded according to the same loading order as the `LocalLib` process. 
 
-- The `Msg`-function provides a generic handling of showing/logging information. It can be pre-configured using `.json` or `.dfp` files as described below.
+- The `Write-Message`-function provides a generic handling of showing/logging information. It can be pre-configured using `.json` files as described below.
 
 - The function `Add-ScriptHeader` will add a [comment-based help PowerShell header](https://learn.microsoft.com/en-us/powershell/scripting/developer/help/examples-of-comment-based-help?view=powershell-7.3) from the `param()` content and `Update-ScriptHeader` checks and fixes any missing parameter(s) in existing headers. Use `-WhatIf` option to see suggested header(s).
 
@@ -73,7 +87,7 @@ Because we are system administrators that just want to get going with PowerShell
 
 Because we want a jump start for writing a script with `Get-Help` support by using included templates.
 
-Because we want to be able to copy a script from one environment to another without the need to change them making code signing easier (or less of a hassle). Default input arguments are read from settings files.
+Because we want to be able to copy a script from one environment to another without the need to change them making code signing easier (or less of a hassle). Default input arguments are read from settings files instead of hardwired in the scripts.
 
 Because we want to choose how output (messages, verbose and errors) are handled for each site and/or environment without rewriting the scripts. Log to windows eventlog, a log file or only to `StdOut`?
 
@@ -83,17 +97,19 @@ Because we would like to have local PS functions to expand/replace the PSJumpSta
 
 ## Practical usage of setting files
 
-Have a look in the `PSJumpStart.json` or `PSJumpStart.dfp` file (in the module `Functions` folder) using a text editor. Those are the least significant default settings. Use them to set your preferred configurations (see `$PSDefaultParameterValues` for details).
+Have a look in the `PSJumpStart.json` file (in the module `Functions` folder found by `Get-ModuleHelp` command) using a text editor. Those are the least significant default settings. Use them to set your preferred basic configurations (see `$PSDefaultParameterValues` for details).
 
 The load order of setting files is described below, but let's have an example; A PowerShell file is located on a test-server and a prod-server. The file issues an `Invoke-RestMethod` but you want each file to use different URL:s accoring to environment. The url is part of input parameters as `$RestApiUrl`, but you want default value depending on script location. If the servers are located in different domains the solution would be to create domain named `json` files. If the servers are sitting in the same domain the solution is made by creating server named `json` files.
 
-### Using `json` files
+The module also comes with a set of commands for retreiving specific configuration data for named environments.
+
+### The `json` file syntax
 
 These files may be used to set default values for script input arguments as well as function call arguments. The syntax for setting default values for standard functions follow the `$PSDefaultParameterValues`
 
 `"Function-Name:Argument-Name":"value/code"`
 
-To populate standard input argument values to a `.ps1` you remove the function name part of the line above
+You remove the function name part of the line above to populate standard value for input arguments for a `.ps1` script.
 
 `"Argument-Name":"value/code"`
 
@@ -101,30 +117,16 @@ So if you want `$PSpids` to contain currently running PowerShell sessions, you m
 
 Call the function `Get-GlobalDefaultsFromJsonFiles` to get content for `$PSDefaultParameterValues`. Copy the `GetLocalDefaultsFromFiles` function from the template file `PSJumpStartStdTemplateWithArguments.ps1`. Or just use the template as starting point.
 
-### Using `dfp` files
+### Configuration files load order
 
-The `.dfp` flawor works the same waay as the `.json` files. The support is provided for legacy reasons. The syntax for setting default values for standard functions looks like this
-
-`Function-Name:Argument-Name=value/code`
-
-To use a `dfp` file as a repository for standard input argument values to a `.ps1` you remove the function name part of the line above
-
-`Argument-Name=value/code`
-
-So if you are using a site name argument in several scripts  ,`[string]$SiteName` , you may create a logon domain named `dfp`file with content `SiteName="www.whatever.com"`
-
-Call the function `Get-GlobalDefaultsFromDfpFiles` to get content for `$PSDefaultParameterValues` and the local function `GetLocalDefaultsFromDfpFiles` to set local script variables. Or simply use the template file `PSJumpStartStdTemplateWithArgumentsDfp.ps1` as a starting point.
-
-### Arguments load order
-
-The `json` or `dfp` files are read in a specific order by `Get-SettingFiles` where the most significant setting will rule over the lower order settings. The order of loading is:
+The `json` files are read in a specific order by `Get-SettingFiles` where the most significant setting will rule over the lower order settings. The order of loading is:
 
 1. Provided arguments will always override any default file settings.
-2. User logon ID (`[System.Security.Principal.WindowsIdentity]::getCurrent()`) file name in script folder.
-3. Computer file name (`$Env:COMPUTERNAME`) in script folder.
-4. Logon provider file name (domain or local machine) in script folder.
-5. Script name file in script folder.
-6. Computer file name (`$Env:COMPUTERNAME`) in script folder.
+2. User logon ID (`[System.Security.Principal.WindowsIdentity]::getCurrent()`) file name in the script folder.
+3. Computer file name (`$Env:COMPUTERNAME`) in the script folder.
+4. Logon provider file name (domain or local machine) in the script folder.
+5. Script name file in the script folder.
+6. Computer file name (`$Env:COMPUTERNAME`) in PSJumpStart module folder.
 7. Logon provider file name (domain or local machine) in PSJumpStart module folder.
 8. Any other loaded module name in the PSJumpStart module `Functions` subfolder (for instance an `ActiveDirectory.json` file).
 9. The `PSJumpStart.json` file in the module `Functions` subfolder.
@@ -133,34 +135,57 @@ It is also possible to call `Get-SettingFiles` to retreive a string array of fil
 
 ### The art of logging
 
-The `json` or `dfp` files may also be used to setup the logging environment by setting default variables for the `Msg`function. It may write output to log files, event log or output to console only. Please remember to run any PowerShell as Adminstrator the first time to create any custom log name in the event log. The use of the settings files will enable you to set different event log names, but use this carefully as any script registered for a log name cannot write to another event log name without removing the source using `Remove-Eventlog`.
+The `json` files may also be used to setup the logging environment by setting default variables for the `Write-Message` function. It may write output to log files, event log or output to console only. Please remember to run any PowerShell as Adminstrator the first time to create any custom log name in the event log. The use of the settings files will enable you to set different event log names, but use this carefully as any script registered for a log name cannot write to another event log name without removing the source using `Remove-Eventlog`.
+
+### Using named environment settings
+
+Sometimes you want one adminstrative task to use different settings according to a named environment. Look at the following `json` sample:
+```json
+{
+    "Environments":{
+      "Dev":{
+        "SQLserver":".",        
+        "Array":["apple","banana","((New-Guid).Guid)"]        
+      },
+      "Test":{
+        "SQLserver":"MyTestServer",        
+        "Array":["one","two","((New-Guid).Guid)"]
+      },
+      "Prod":{
+        "SQLserver":"ContosoSQL",        
+        "Array":["Billy","Jean","Jane"]
+      }
+    }
+}
+```
+Use `$cfg=Get-EnvironmentConfiguration "Dev"` to retreive environment settings for the development environment and then `$cfg.SQLserver` to get the SQL server name. See `Samples` folder in the module folder to get started.
 
 ## Locally customized functions
 
-During loading of functions the `PSJumpStart.psm1` file will load any `ps1` function files from the folder `LocalLib` in the modules folder. Customized functions will override any PSJumpStart functions. So you may add any local functions to enhance the module.
+During loading of functions, the `PSJumpStart.psm1` file will load any `ps1` function files from the folder `LocalLib` in the same folder as the started PSJumpStart enabled `ps1` file. Customized functions will override any provided PSJumpStart functions. This makes it possible to have a set of `ps1` files targeted for a specific purpose with their own set of local functions as seen in the sample [AdExportImport](https://github.com/jaols/ADExportImport) solution.
 
-It is also possible to create a `LocalLib` folder in any location containing PSJumpStart enabled `ps1` files. This makes it possible to have a set of `ps1` files targeted for a specific purpose with their own set of local functions. These functions will of course override any existing functions in the module folders.
+It is also possible to have machine specific functions in the `LocalLib` folder in the PSJumpStart modules folder. These functions will of course override any existing commands in the standard `Functions` module folder.
 
-## Loading DLL files
+## Automatic loading of DLL files
 
 The `PSJumpStart.psm1` file will use the `Add-Type` command to load any `.dll` files found in a `LocalLib` folder. The load order follow customized funktion loading. For example;
 
 A script is created in `C:\MuppetLabb` to read items from a Sharepoint list using CSOM. This requires the dll `Microsoft.SharePoint.Client.dll`. This dll file may be placed in the `C:\MuppetLabb\LocalLib` folder for exclusive use by scripts in `C:\MuppetLabb` or in the PSJumpStart module `LocalLib` folder for access by all PSJumpStart scripts. Only the `C:\MuppetLabb\LocalLib\Microsoft.SharePoint.Client.dll` will be lodaed for scripts in `C:\MuppetLabb` if the dll file is located in both folders.
 
-## How to debug
+## Using `json` files for debugging
 
-The problem; If you are calling a function in a loaded module and want to see the results from `Write-Verbose` you need to add `-Verbose:$VerbosePrefererence` in the arguments for the call. By using `json` or `dfp` files you may activate debug mode for whatever part you need.
+The problem; If you are calling a function in a loaded module and want to see the results from `Write-Verbose` you need to add `-Verbose:$VerbosePrefererence` in the arguments for the call. By using `json` files you may activate debug mode for whatever part you need.
 Please note that the global variable `$PSDefaultParameterValues` is lost in nested `psm1` function calls. So if you call a sub-function from a `psm1` function you need to retreive the content of `$PSDefaultParameterValues` into the calling `psm1` function using `$PSDefaultParameterValues = (Get-Variable -Name PSDefaultParameterValues -Scope Global).Value`
 
 ### Global debugging
 
-Edit the PSJumpStart module `json` and `dfp`files to activate debug mode for ALL scripts, modules and function calls: set `"*:Verbose":true`and `*:Verbose=$true`in the files. The next execution session will activate verbose mode across the board. This can be done by using a specific user `json` and/or `dfp`file so only that user will get verbose feedback.
+Edit the PSJumpStart module `json` to activate debug mode for ALL scripts, modules and function calls: set `"*:Verbose":true`and `*:Verbose=$true`in the files. The next execution session will activate verbose mode across the board. This can be done by using a specific user `json` so only that user will get verbose feedback.
 
 ### Specific script debugging
 
 To debug your script as well as get `Write-Verbose`printouts from ALL used modules and functions;
 
-1. Create a `json` or `dfp`file (depending on what the script uses) with the same name as your script.
+1. Create a `json` with the same name as your script.
 2. Put `"*:Verbose":true` or `*:Verbose=$true`in it.
 3. Run the script to load `Verbose` mode in current session.
 
@@ -168,7 +193,7 @@ Using the argument `-Verbose` when starting the script will set verbose mode for
 
 ### Function debugging
 
-If you only need to get verbose printout from a specific function you can add `"Function-Name:Verbose":true` in any `json` file, or `Function-Name:Verbose=$true` in any `dfp` file.
+If you only need to get verbose printout from a specific function you can add `"Function-Name:Verbose":true` in any `json` file.
 
 ## The templates
 
@@ -176,7 +201,7 @@ In the `Templates`folder (living in the module folder) is a set of templates. Us
 
 ## Script signing
 
-There is a little stand alone feature in the `Templates` folder for script signing. It will search for a valid `CodeSigning` capable certificate on the local computer. If not found a new self signed certificate will be created. The found/new certificate is then used to sign single scripts or all scripts in a folder. 
+There is a little stand alone feature in the `Templates` folder for script signing. It will search for a valid `CodeSigning` capable certificate on the local computer. If not found a new self signed certificate will be created. The found/new certificate is then used to sign single scripts or all scripts in a folder.
 
 This feature is **not** dependent on the PSJumpStart module.
 
@@ -184,11 +209,13 @@ This feature is **not** dependent on the PSJumpStart module.
 
 This module comes with a `.cmd` file used for calling its corresponding PowerShell. The `runCleanupEmptyGroups.cmd` will launch the `CleanupEmptyGroups.ps1` PowerShell script with any provided arguments. The default behaviour of this template is to catch any output from the PowerShell and dump it to a log file in a `logs` sub folder. If any unhandled exceptions occur they will be put in a separate `ERR_` log file.
 The primary use for this is in the Task Scheduler. If you launch a PowerShell script directly from Task Scheduler you will not be able to get the exception data written by the PowerShell script. The `.cmd` file will trap and log the information.
-The recomendation for Task Scheduled scripts is using a `.json` or `.dfp` named after the service account running the job. Then you may turn off any other logging method for `.ps1` files and let the `.cmd` file handle logging to file.
+The recomendation for Task Scheduled scripts is using a `.json` file named after the service account running the job. Then you may turn off any other logging method for `.ps1` files and let the `.cmd` file handle logging to file.
+
+Or only let the CMD catch exceptions if you expect massive output from a running script and let the script log to an event log.
 
 ## Down the rabbit hole
 
-Let's dive in to look at some of the main features in the package.
+Let's dive in and take a deeper look into some of the features in the package.
 
 ### Script arguments and variable population
 The local function for `json` files is named `Get-LocalDefaultVariables` to populate default script arguments. The `param($ArgOne)` will be populatated from the line `"ArgOne":"This is the default value if the user does not provide a command line value"` in any found `json` file. It is possible to use a structural `json` file for populating variables.
@@ -206,15 +233,14 @@ The value for `UseMethod` above is found in the PowerShell variable `$RestApi.Us
 
 The function `Get-LocalDefaultVariables` has two extra arguments. The switch `-defineNew` will create local variables for all found variables in `json` files, not only existing empty variables (input arguments) in the local script. The other switch is `-overWriteExisting` that will reverse the load order making the module `json` files override any user provided command arguments or settings.
 
-The corresponding local function `GetLocalDefaultsFromDfpFiles` is a local script function for using `dfp` files to populate default arguments. But it is missing the extras...
-
+You can also use the `Get-EnvironmentConfiguration` command for a more complex set of `json` configurations.
 
 ### `$PSDefaultParameterValues`
 
-The use of `json` or `dfp` files separates default parameters from the PowerShell scripts. The files are loaded in a preset order using the `Get-SettingsFiles` function where the first encountered setting is used. The `Get-GlobalDefaultsFromJsonFiles` function is used for loading `json` file content into the PowerShell variable `$PSDefaultParameterValues` the corresponding function for `dfp` files is of course `Get-GlobalDefaultsFromDfpFiles`.
+The use of `json` files separates default parameters from the PowerShell scripts. The files are loaded in a preset order using the `Get-SettingsFiles` function where the first encountered setting is used. The `Get-GlobalDefaultsFromJsonFiles` function is used for loading `json` file content into the PowerShell variable `$PSDefaultParameterValues`.
 
  As `$PSDefaultParameterValues` may be set for all functions it is possible for `Write-Verbose` to present output from directly called functions in modules without adding `-Verbose:$VerbosePrefererence` in the calling script. 
- **PLEASE NOTE** that the `$PSDefaultParameterValues` is NOT inherited into called child module functions. To ensure standard values use in nested module function (`psm1`) calls you need to add the command `$PSDefaultParameterValues = (Get-Variable -Name PSDefaultParameterValues -Scope Global).Value` in the calling module function (not pretty but it works).
+ **PLEASE NOTE** that the `$PSDefaultParameterValues` is NOT inherited into called child module functions. To ensure standard setting values are used in nested module function (for example in the `localLib` folder) you need to add the command `$PSDefaultParameterValues = (Get-Variable -Name PSDefaultParameterValues -Scope Global).Value` in the calling module function (not pretty but it works).
 
 [The story behind the `Get-CallerPreference`function](https://blogs.technet.microsoft.com/heyscriptingguy/2014/04/26/weekend-scripter-access-powershell-preference-variables/)
 
@@ -226,22 +252,26 @@ More information on the use of `$PSDefaultParameterValus`:
 [Some practical usage samplings](https://www.red-gate.com/simple-talk/sysadmin/powershell/powershell-time-saver-automatic-defaults)
 
 
-### The `Msg` function
+### The `Write-Message` function
 
 The unified way of writing output information from calling scripts. There are a number of arguments available when calling this function making it possible to write output to log file as well as windows Eventlog. Use the `.json` files framework to set default values for input arguments. This example will write information to a log file (in script folder with same name as script + year and month) AND to the Windows Eventlog `PSJumpStart`:
 ```json
 {
-    "Msg:useFileLog":  true,
-    "Msg:useEventLog":  true,
-    "Msg:logFile":  "($(Split-Path -Parent $MyInvocation.PSCommandPath) + '\\' + $(Split-Path -Leaf $MyInvocation.PSCommandPath) + '.' + (Get-Date -Format 'yyyy-MM') + '.Log')",
-    "Msg:EventLogName":  "PSJumpStart"    
+    "Write-Message:useFileLog":  true,
+    "Write-Message:useEventLog":  true,
+    "Write-Message:logFile":  "($(Split-Path -Parent $MyInvocation.PSCommandPath) + '\\' + $(Split-Path -Leaf $MyInvocation.PSCommandPath) + '.' + (Get-Date -Format 'yyyy-MM') + '.Log')",
+    "Write-Message:EventLogName":  "PSJumpStart"
 }
 ```
-The `Msg`-function will write messages using  `Write-Output` or `Write-Error` if it does not write output to a log file or eventlog. This will write messages to the std-out or std-err pipe. As PowerShell does not have a separated function output pipe you need to have this in mind when using `Msg`in called functions who returns data. If any logging is enabled (eventlog or file) the `Msg` will use `Write-Host` to present output. If this is not what you want, just copy the function to a `localLib` folder and change it according to current needs.
+The `Write-Message`-function will write messages using  `Write-Output` or `Write-Error` if it does not write output to a log file or eventlog. This will write messages to the std-out or std-err pipe. As PowerShell does not have a separated function output pipe you need to have this in mind when using `Write-Message`in called functions who returns data. If any logging is enabled (eventlog or file) the `Write-Message` will use `Write-Host` to present output. If this is not what you want, just copy the function to a `localLib` folder and change it according to current needs.
 
-To use this function from any `psm1` (loaded) function or nested functions, you may need to retrieve the global content of `$PSDefaultParameterValues` adding the following code line:
+To use this function from any `psm1`-loaded function or nested functions, you may need to retrieve the global content of `$PSDefaultParameterValues` adding the following code line:
 
  `$PSDefaultParameterValues = (Get-Variable -Name PSDefaultParameterValues -Scope Global).Value`
+
+ So basically don't do that. Use `Write-Verbose` or return any object with data back to calling parent.
+
+ **A small observation from real life.** If options `"useFileLog: false"` and `"useEventLog: false"` are set, then the commnad will return all messages to `std-out` or `std-error` expecting calling part to catch it. This may become a problem if a child PS-file write accessive amounts of data to `std-out`. Then the child may stop processing without any exception or other signs of trouble. It just stops running.
 
 ### The birth of the `Get-AccessCredential` function
 There are times when you just want to run your admin task PowerShell without typing the password at every run time. And one morning I just got tired of it, so I wrote this function. It is based on the commonly used `PSCredential` object and this loaded by `Import-Clixml` and saved using `Export-Clixml`. If a file is missing the function will call itself with the `-renew` option presenting a dialog for getting new credentials. The saved `xml` file is protected by both current user and computer context. It is only possible for the correct user to retreive the password in clear text.
@@ -250,7 +280,7 @@ So the name of the cashed credential file will be `$env:ComputerName + "." + $en
 
 ### The `$CallerInvocation` story
 
-To ensure correct environment the `$CallerInvocation` is used as input parameter by some functions in the `psm1` file. The input should be `$MyInvocation` of the root caller script.
+To ensure correct environment the `$CallerInvocation` is used as input parameter by some functions imported by the `psm1` file. The input should be `$MyInvocation` of the root caller script. This usage has diminished from version 2.x.x of PSJumpstart and replaced with the `Get-PsCallStack` command.
 
 [Some words on the PowerShell module environment](https://www.red-gate.com/simple-talk/dotnet/.net-tools/further-down-the-rabbit-hole-powershell-modules-and-encapsulation/)
 
@@ -280,7 +310,7 @@ Futher down the rabbit hole to Jumstart your PS authoring...
 ### Other repositories
 There are many very talanted people out there and this is just a few samples found searching for inspirations. You may populate your local environment with whatever you need.
 
-[PSScriptTools](https://github.com/jdhitsolutions/PSScriptTools) is a generic library of functions/formats/types focused on enhancing the PowerShell console prompt. The module is installed from [Powershell Gallery](https://www.powershellgallery.com/packages/PSScriptTools)
+[PSScriptTools](https://github.com/jdhitsolutions/PSScriptTools) is a generic library of functions/formats/types focused on enhancing the PowerShell console prompt experiance. The module is installed from [Powershell Gallery](https://www.powershellgallery.com/packages/PSScriptTools)
 
 [PoshFunctions](https://github.com/riedyw/PoshFunctions) is also a vast collection of functions for use in different scenarios. This is also found at [PowerShell Gallery](https://github.com/riedyw/PoshFunctions).
 
