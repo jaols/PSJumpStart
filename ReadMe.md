@@ -18,6 +18,12 @@ v 2.0.0
 - Improved function loading in `.psm1` file with verbose printout for each function location
 - Improved `Get-ModuleHelp` function with object list output and support for `Format-*` commands
 
+### The future?
+- Improved script signing framework with automated certificate renewal
+- Small tutorial on different types of PowerShell files. Main scripts, function scripts and Main script "wrappers".
+- Explore the idea of `Get-ValuesFromJsonMapping`
+- Any other provided suggestion!!
+
 ### History
 
 v 1.0.2
