@@ -9,12 +9,14 @@ The PSJumpStart module files with usage and feature documentation
 
 v 2.0.0
 
-- DFP files are no longer supported. Only JSON files may be used.
-- Major rewrite removing most usage of $CallerInvocation (root script $MyInvocation environment)
-- Msg is now an alias for Write-Message 
-- New functions for named environment json configurations
-- Some Format.ps1xml included in module (script local Format folder will override)
-- First template in place for as a starting point for function scripts to use in localLib folders
+- `DFP` files are no longer supported. Only `JSON` files may be used.
+- Removed usage of `$CallerInvocation` in `Get-SettingsFiles` function (root script `$MyInvocation` environment)
+- `Msg` is now an alias for `Write-Message` 
+- New functions for named environment in `.json` files
+- Some `*Format.ps1xml` files included in module (script local `Format` folder will override)
+- First template in place for as a starting point for function scripts to use in `localLib` folders
+- Improved function loading in `.psm1` file with verbose printout for each function location
+- Improved `Get-ModuleHelp` function with object list output and support for `Format-*` commands
 
 ### History
 
@@ -78,13 +80,13 @@ v 1.2.3 - 1.2.9
 
 - Support for LocalLib in current script location OR current directory $PWD.Path (this may get removed)
 - Added support for sendlist in the send mail function
-  1.2.4 - Added Pipeline script template
-  1.2.5 - New functions html handling (for general use or part of html-mail content)
-  1.2.6 - Small fixes and improved doc as well as a shell enviroment script
-  1.2.7 - Improved Get-ModuleHelp and new PS-header handlers 
-  1.2.71 - Bug correction in PSJumpstart.ps1xml
-  1.2.8 - Support for DLL Add-Type in same fasion as functions (load from script localLib folder or localLib module folder). Improved Get-ModuleHelp to include Available modules.
-  1.2.9 - Support for computer name settings files (long overdue) + Mutex support
+- Added Pipeline script template
+- New functions html handling (for general use or part of html-mail content)
+- Small fixes and improved doc as well as a shell enviroment script
+- Improved Get-ModuleHelp and new PS-header handlers 
+- Bug correction in PSJumpstart.ps1xml
+- Support for DLL Add-Type in same fasion as functions (load from script localLib folder or localLib module folder). Improved Get-ModuleHelp to include Available modules.
+- Support for computer name settings files (long overdue) + Mutex support
 
 v 1.3.0
 
