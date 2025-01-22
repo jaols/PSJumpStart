@@ -1,7 +1,7 @@
 # PSJumpStartLight
 
 ## Introduction
-This is **NOT** a PowerShell module. PSJumpStartLight is a set of files to jumpstart the creation of a solution environment. The principal for the environment is;
+This is **NOT** a PowerShell module. PSJumpStartLight is a set of files to jumpstart the creation of a solution environment. The principals for the environment are;
 
 - Scripts to launch by a user is placed in a main folder.
 - Script templates for main scripts is placed in the main folder.
