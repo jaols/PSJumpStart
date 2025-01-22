@@ -34,6 +34,8 @@ The **"base download url"** is the source url at GitHub for example the url `htt
 The **Files** list is the cherry picking list of functions to get or the `zip` file name for the full code download.
 **LocalFolder** is the local target subfolder. It is possible to use `($libraryName)` which is the command argument value for `Get-PSJumpStartLightFromGitHub.ps1`.
 
+[This article describes how to retreive base Urls from GitHub](https://blog.ironmansoftware.com/daily-powershell/powershell-download-github/)
+
 ## Usage
 Copy one of the provided templates to a new name and edit the header and input parameter section. 
 
