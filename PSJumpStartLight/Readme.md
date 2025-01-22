@@ -31,7 +31,9 @@ This is a descriptive syntax sample `json` file:
 }
 ```
 The **"base download url"** is the source url at GitHub for example the url `https://raw.githubusercontent.com/jaols/PSJumpStart/refs/heads/master/PSJumpStart/Templates` will download files from [the PSJumpStart template folder](https://github.com/jaols/PSJumpStart/tree/master/PSJumpStart/Templates). The url `https://github.com/jaols/ServiceAccountHandler/archive/refs/heads` will get the `master.zip` zip file from the Code download button at [ServiceAccountHandler](https://github.com/jaols/ServiceAccountHandler).
+
 The **Files** list is the cherry picking list of functions to get or the `zip` file name for the full code download.
+
 **LocalFolder** is the local target subfolder. It is possible to use `($libraryName)` which is the command argument value for `Get-PSJumpStartLightFromGitHub.ps1`.
 
 [This article describes how to retreive base Urls from GitHub](https://blog.ironmansoftware.com/daily-powershell/powershell-download-github/)
