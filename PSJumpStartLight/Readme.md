@@ -25,7 +25,7 @@ This is a descriptive syntax sample `json` file:
 {
     "Solution Name":{
         "Url":"base download url",
-        "Files":["File1.ps1","File1.ps1"],
+        "Files":["File1.ps1","File2.ps1","FileNN.ps1"],
         "LocalFolder":"Local target folder"
     }
 }
