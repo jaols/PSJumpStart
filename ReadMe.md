@@ -5,18 +5,13 @@ Sample implementation scripts for PSJumpStart module
 ## [PSJumpStart](https://github.com/jaols/PSJumpStart/tree/master/PSJumpStart)
 The PSJumpStart module files with usage and feature documentation
 
+## [PSJumpStartLight](https://github.com/jaols/PSJumpStart/tree/master/PSJumpStartLight)
+PSJumpStartLight is a stand alone set of templates and functions NOT dependent on any extra module(s)
+
 ## Release notes
+v 2.0.1
 
-v 2.0.0
-
-- `DFP` files are no longer supported. Only `JSON` files may be used.
-- Removed usage of `$CallerInvocation` in `Get-SettingsFiles` function (root script `$MyInvocation` environment)
-- `Msg` is now an alias for `Write-Message` 
-- New functions for named environment in `.json` files
-- Some `*Format.ps1xml` files included in module (script local `Format` folder will override)
-- First template in place for as a starting point for function scripts to use in `localLib` folders
-- Improved function loading in `.psm1` file with verbose printout for each function location
-- Improved `Get-ModuleHelp` function with object list output and support for `Format-*` commands
+ - The birth of PSJumpStartLight. A module independent cherry picking solution (not part of PSJumpStart module).
 
 ### The future?
 - Improved script signing framework with automated certificate renewal
@@ -100,6 +95,13 @@ v 1.3.0
 - Script template improvements and a few new functions - Set-ValuesFromExpressions + Compare-PSObjects
 - Some housekeeping in samples folder and new folder for Pester tests.
 
+v 2.0.0
 
-
-
+- `DFP` files are no longer supported. Only `JSON` files may be used.
+- Removed usage of `$CallerInvocation` in `Get-SettingsFiles` function (root script `$MyInvocation` environment)
+- `Msg` is now an alias for `Write-Message` 
+- New functions for named environment in `.json` files
+- Some `*Format.ps1xml` files included in module (script local `Format` folder will override)
+- First template in place for as a starting point for function scripts to use in `localLib` folders
+- Improved function loading in `.psm1` file with verbose printout for each function location
+- Improved `Get-ModuleHelp` function with object list output and support for `Format-*` commands

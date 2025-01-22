@@ -1,0 +1,17 @@
+{
+    "PSJumpStartLightTemplates":{
+        "Url":"https://raw.githubusercontent.com/jaols/PSJumpStart/refs/heads/master/PSJumpStartLight/Templates",
+        "Files":["PSJumpStartLightTemplateWithArguments.ps1","PSJumpStartLightPipelineTemplate.ps1"],
+        "LocalFolder":"."
+    },
+    "PSJumpStartFunctions":{
+        "Url":"https://raw.githubusercontent.com/jaols/PSJumpStart/refs/heads/master/PSJumpStart/Functions",
+        "Files":["Write-Message.ps1","Get-SettingsFiles.ps1","Set-ValuesFromExpressions.ps1","Get-GlobalDefaultsFromJsonFiles.ps1"],
+        "LocalFolder":"($libraryName)"
+    },
+    "PoshFunctions":{
+        "Url":"https://raw.githubusercontent.com/riedyw/PoshFunctions/refs/heads/master/Functions",
+        "Files":["ConvertTo-RomanNumeral.ps1"],
+        "LocalFolder":"($libraryName)"
+    }
+}

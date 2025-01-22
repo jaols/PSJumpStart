@@ -20,7 +20,9 @@ function Get-SettingsFiles {
     ) 
     
         #$globalLocation = $PSScriptRoot
-        $globalLocation = Split-Path -parent (Get-Module PSJumpStart | Select-Object -ExpandProperty Path)
+        try {
+            $globalLocation = Split-Path -parent (Get-Module PSJumpStart | Select-Object -ExpandProperty Path)
+        } catch {}
 
         Write-Verbose "Global location: $globalLocation"
         
