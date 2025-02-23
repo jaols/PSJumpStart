@@ -24,7 +24,7 @@ REM This line will launch with a separate ERROR-log
 PowerShell -Command "%~dp0%MyName:~3%.ps1" %* >> %StdLog% 2>> %ErrLog%
 
 REM Remove error log if empty
-findstr "^" %ErrLog% || del %ErrLog% >nul 
+(type %ErrLog% | findstr "^")  || del %ErrLog% >nul 
 
 chcp 850 > nul
 EndLocal

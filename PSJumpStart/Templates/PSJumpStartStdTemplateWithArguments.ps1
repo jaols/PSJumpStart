@@ -53,7 +53,7 @@ function Get-LocalDefaultVariables {
                    if (!$var) {
                        if ($defineNew) {
                            Write-Verbose "New Var: $property"
-                           $var = New-Variable -Name  $property -Value $value -Scope 1
+                           $var = New-Variable -Name  $property -Value $value -Scope 1 -WhatIf:$false
                        }
                    } else {
                        #We only overwrite non-set values if not forced
